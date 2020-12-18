@@ -7,9 +7,9 @@ import java.util.TreeSet;
 
 public class MapPanel extends JLayeredPane implements ActionListener {
 
-    private final Simulation simulation;
+    public final Simulation simulation;
     private final EvolutionMap map;
-    private final int squareSize = 40;
+    public int squareSize;
     public Timer timer;
     public StatPanel statPanel;
     private Animal animalSelected = null;
@@ -18,25 +18,14 @@ public class MapPanel extends JLayeredPane implements ActionListener {
     private int currentObservationDay = 0;
     private final JFormattedTextField genomeField = new JFormattedTextField();
     private String dominantGenome = null;
-
-    private final Image[] pics = {
-            new ImageIcon("pics/chick-up.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/chick-up-right.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/chick-right.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/chick-down-right.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/chick-down.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/chick-down-left.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/chick-left.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/chick-up-left.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/carrot1.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
-            new ImageIcon("pics/carrot2.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT)
-    };
+    private final Image[] pics;
 
     Vector2d mousePressedPosition = null;
 
-    public MapPanel(Simulation simulation) {
+    public MapPanel(Simulation simulation, int squareSize) {
         this.simulation = simulation;
         this.map = simulation.map;
+        this.squareSize = squareSize;
         setBackground(Color.WHITE);
         timer = new Timer(1000, this);
         timer.start();
@@ -44,6 +33,19 @@ public class MapPanel extends JLayeredPane implements ActionListener {
         setPreferredSize(new Dimension(map.width*squareSize, map.height*squareSize));
         setLayout(null);
         add(genomeField, DRAG_LAYER);
+
+        pics = new Image[]{
+                new ImageIcon("pics/chick-up.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/chick-up-right.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/chick-right.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/chick-down-right.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/chick-down.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/chick-down-left.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/chick-left.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/chick-up-left.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/carrot1.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
+                new ImageIcon("pics/carrot2.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT)
+        };
 
         addMouseMotionListener(new MouseMotionListener() {
             @Override
@@ -136,14 +138,8 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                 g2D.setPaint(Color.black);
                 g2D.drawRect(position.x*squareSize,position.y*squareSize, squareSize, squareSize);
 
-                int centerX = position.x*squareSize + squareSize/2;
-                int centerY = position.y*squareSize + squareSize/2;
-
                 Grass grass = map.grassAt(position);
                 if (grass != null){
-                    g2D.setPaint(Color.red);
-                    int radius = squareSize/4;
-                   // g2D.fillOval(centerX-radius, centerY-radius, 2*radius, 2*radius);
                     g2D.drawImage(pics[8+ ((position.x + position.y)%2)],  position.x*squareSize, position.y*squareSize, null, this);
                 }
 
@@ -154,9 +150,15 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                             g2D.setPaint(Color.red);
                             g2D.fillRect(position.x*squareSize,position.y*squareSize, squareSize, squareSize);
                         }
-                        int radius = Math.min(squareSize/2, animal.getEnergy() * squareSize / (10*simulation.minimumEnergy));
-                        g2D.setPaint(Color.getHSBColor(((float)(squareSize-2*radius)/squareSize)*200+126, 100,50));
-                        g2D.fillOval(centerX - radius, centerY - radius, 2*radius, 2*radius);
+
+                        float energyLevel = Math.min(1, (float)animal.getEnergy()/(4*simulation.minimumEnergy));
+                        g2D.setPaint(Color.getHSBColor((energyLevel*120)/360, (float)1,(float)1));
+
+                        int barWidth = squareSize / 5;
+                        int barHeight = (int) (squareSize * energyLevel);
+                        int x = (position.x + 1) * squareSize - barWidth;
+                        int y = (position.y + 1) * squareSize - barHeight;
+                        g2D.fillRect(x, y , barWidth, barHeight);
 
                         int orientation = animal.getOrientation().getIndex();
                         g2D.drawImage(pics[orientation],  position.x*squareSize, position.y*squareSize, null, this);
@@ -165,7 +167,7 @@ public class MapPanel extends JLayeredPane implements ActionListener {
             }
         }
 
-        //genomeField.paint(g);
+        genomeField.paint(g);
         mousePressedPosition = null;
     }
 

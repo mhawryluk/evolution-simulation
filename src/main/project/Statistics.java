@@ -1,9 +1,6 @@
 package project;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Statistics {
 
@@ -12,15 +9,13 @@ public class Statistics {
     private int animalsDead = 0;
     private double averageLifespan = 0;
     private double averageOffspringCount = 0;
+    private double averageEnergy = 0;
     private final HashMap<String, Integer> genomeCount = new HashMap<>();
 
-    public int countAnimals(){
-        return animalsCount;
-    }
-
-    public void animalBorn(String genome){
+    public void animalBorn(Animal animal){
         averageOffspringCount = ((averageOffspringCount*animalsCount)+2)/(animalsCount+1);
         animalsCount++;
+        String genome = animal.getGenomeString();
         if (!genomeCount.containsKey(genome))
             genomeCount.put(genome, 1);
         else
@@ -45,10 +40,6 @@ public class Statistics {
         return Collections.max(genomeCount.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
     }
 
-    public int countGrass(){
-        return grassCount;
-    }
-
     public void newGrass(){
         grassCount++;
     }
@@ -57,11 +48,30 @@ public class Statistics {
         grassCount--;
     }
 
+    public int countGrass(){
+        return grassCount;
+    }
+    public int countAnimals(){
+        return animalsCount;
+    }
+
     public double getAverageLifespan(){
         return averageLifespan;
     }
 
     public double getAverageOffspringCount(){
         return averageOffspringCount;
+    }
+
+    public double getAverageEnergy() {
+        return averageEnergy;
+    }
+
+    public void updateAverageEnergy(LinkedHashSet<Animal> animalsOnMap){
+        averageEnergy = animalsOnMap
+                .stream()
+                .mapToInt(Animal::getEnergy)
+                .average()
+                .orElse(0.0);
     }
 }

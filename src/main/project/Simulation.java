@@ -10,6 +10,7 @@ public class Simulation {
     private final int nutritionalEnergy;
     public final int minimumEnergy;
     public final Statistics stats;
+    private LongTermStatistics longTermStatistics = null;
 
     private int simulationDay = 1;
     private Animal observedAnimal;
@@ -32,7 +33,7 @@ public class Simulation {
         //gen 0
         for (int i = 0; i < initialPopulation; i++) {
             Animal newAnimal = new Animal(map, initialEnergy);
-            stats.animalBorn(newAnimal.getGenomeString());
+            stats.animalBorn(newAnimal);
             animalsOnMap.add(newAnimal);
             newAnimal.addStatisticsObserver(stats);
         }
@@ -46,8 +47,12 @@ public class Simulation {
         eatGrass();
         reproduction();
         map.updateJungle(takenPositions);
+        stats.updateAverageEnergy(animalsOnMap);
         addNewGrass(nutritionalEnergy);
         turnAnimals();
+        if (longTermStatistics != null){
+            longTermStatistics.update();
+        }
     }
 
     private void decreaseEnergy(){
@@ -136,7 +141,7 @@ public class Simulation {
                 Animal offspring = new Animal(map, parent1, parent2);
                 offspring.addStatisticsObserver(stats);
                 animalsOnMap.add(offspring);
-                stats.animalBorn(offspring.getGenomeString());
+                stats.animalBorn(offspring);
                 offspringPositions.add(offspring.getPosition());
 
                 if (isAnimalObserved){
@@ -198,5 +203,14 @@ public class Simulation {
 
     public void unsetObservedAnimal() {
         isAnimalObserved = false;
+    }
+
+    public void setLongTermStatistics(LongTermStatistics longTermStatistics){
+        this.longTermStatistics = longTermStatistics;
+        longTermStatistics.setSimulation(this);
+    }
+
+    public void unsetLongTermStatistics(){
+        longTermStatistics = null;
     }
 }

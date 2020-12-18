@@ -12,12 +12,10 @@ public class EvolutionMap implements IWorldMap{
     public final Map<Vector2d, Grass> placedGrass = new LinkedHashMap<>();
     public final HashSet<Vector2d> jungleAvailablePositions = new HashSet<>();
     public final Map<Vector2d, TreeSet<Animal> > placedAnimals = new LinkedHashMap<>();
-    private final MapVisualizer visualizer;
     private int animalsCount = 0;
     private int grassCount = 0;
 
     public EvolutionMap(int width, int height, int jungleRatio){
-        visualizer = new MapVisualizer(this);
         this.width = width;
         this.height = height;
         upperRight = new Vector2d(width-1, height-1);
@@ -107,10 +105,6 @@ public class EvolutionMap implements IWorldMap{
             if (!isInJungle(position) && objectAt(new Vector2d(x, y)) == null)
                 return new Vector2d(x, y);
         }
-    }
-
-    public String toString() {
-        return visualizer.draw(lowerLeft, upperRight);
     }
 
     public Vector2d getOffspringPosition(Vector2d position) {
