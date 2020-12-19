@@ -1,4 +1,5 @@
-package project;
+package project.engine;
+
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -6,16 +7,14 @@ public class Animal extends MapElement {
     private MapDirection orientation;
     private final EvolutionMap map;
     private final Genome genes;
-    private Statistics stats;
     private int lifespan = 0;
-    private final ArrayList <Animal> offsprings = new ArrayList();
+    private final ArrayList <Animal> children = new ArrayList<>();
 
-    public Animal(EvolutionMap map, int energy){ //dla początkowych osobników
+    public Animal(EvolutionMap map, Vector2d position, int energy){ //for initial population
         this.map = map;
         this.energy = energy;
 
-        position = map.getFreeJunglePosition();
-        if (position == null) position = map.getFreePosition();
+        this.position = position;
 
         orientation = MapDirection.NORTH.turn(ThreadLocalRandom.current().nextInt(0, 8));
         genes = new Genome();
@@ -23,11 +22,12 @@ public class Animal extends MapElement {
         map.place(this);
     }
 
-    public Animal(EvolutionMap map, Animal parent1, Animal parent2){ //dla potomków
+    public Animal(EvolutionMap map, Animal parent1, Animal parent2){ //for offsprings
         this.map = map;
         genes = new Genome(parent1, parent2);
         position = map.getOffspringPosition(parent1.getPosition());
         orientation = MapDirection.NORTH.turn(ThreadLocalRandom.current().nextInt(0, 8));
+
         energy = parent1.energy/4 + parent2.energy/4;
 
         parent1.energy *= 0.75;
@@ -38,17 +38,13 @@ public class Animal extends MapElement {
         map.place(this);
     }
 
-    public void addStatisticsObserver(Statistics statistics){
-        stats = statistics;
-    }
-
+    @Override
     public String toString() {
         return orientation.toString();
     }
 
     public void move(){
-        Vector2d newPosition;
-        newPosition = position.add(orientation.toVector());
+        Vector2d newPosition = position.add(orientation.toVector());
         newPosition = map.wrapPosition(newPosition);
         Vector2d oldPosition = position;
         position = newPosition;
@@ -63,10 +59,6 @@ public class Animal extends MapElement {
 
     private void positionChanged(Vector2d oldPosition){
         map.positionChanged(oldPosition, this);
-    }
-
-    public byte[] getGenes() {
-        return genes.getGenome();
     }
 
     public boolean isDead(){
@@ -94,24 +86,28 @@ public class Animal extends MapElement {
     }
 
     public void addOffspring(Animal animal){
-        offsprings.add(animal);
+        children.add(animal);
     }
 
     public int getAllOffspringCount(){
         int offspringCount = 0;
-        for (Animal offSpring: offsprings){
+        for (Animal offSpring: children){
             offspringCount ++;
             offspringCount += offSpring.getAllOffspringCount();
         }
         return offspringCount;
     }
 
-    public int getOffspringCount(){
-        return offsprings.size();
+    public int getChildrenCount(){
+        return children.size();
     }
 
     public MapDirection getOrientation(){
         return orientation;
+    }
+
+    public byte[] getGenes() {
+        return genes.getGenome();
     }
 
     public String getGenomeString(){

@@ -1,5 +1,6 @@
-package project;
+package project.graphics;
 import org.json.JSONObject;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -64,10 +65,9 @@ public class SetUpWindow extends JFrame implements ActionListener {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridLayout(7,1));
         setSize(300, 400);
-        setVisible(true);
-
         Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation(screenDim.width/2-getSize().width/2, screenDim.height/2-getSize().height/2);
+        setVisible(true);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class SetUpWindow extends JFrame implements ActionListener {
             int height = labelHeight.getValue();
             int jungleRatio = labelJungleRatio.getValue();
 
-            Window window = new Window(width, height, initialPopulation, nutritionalEnergy, initialEnergy, jungleRatio);
+            project.graphics.Window window = new Window(width, height, initialPopulation, nutritionalEnergy, initialEnergy, jungleRatio);
             dispose();
         }
     }

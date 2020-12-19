@@ -1,6 +1,7 @@
 package project;
 import org.junit.Assert;
 import org.junit.Test;
+import project.engine.Vector2d;
 
 public class Vector2dTest {
 

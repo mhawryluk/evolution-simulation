@@ -1,41 +1,39 @@
-package project;
+package project.engine;
+
 import javax.jms.IllegalStateException;
 import java.util.*;
 
 public class Simulation {
 
+    public final EvolutionMap map;
+    public final Statistics statistics;
+    private LongTermStatistics longTermStatistics = null;
+    private AnimalObservation animalObservation = null;
+
     private final LinkedHashSet<Animal> animalsOnMap = new LinkedHashSet<>();
     private HashSet<Vector2d> takenPositions;
-    public final EvolutionMap map;
+    private Animal animalObserved = null;
+
     private final int nutritionalEnergy;
     public final int minimumEnergy;
-    public final Statistics stats;
-    private LongTermStatistics longTermStatistics = null;
+    private int simulationDay = 0;
 
-    private int simulationDay = 1;
-    private Animal observedAnimal;
-    private boolean isAnimalObserved = false;
-    private int observedChildrenCount;
-    private int observedOffspringCount;
-    private int observedAnimalDeathDay;
-    private int observedAnimalSetDay;
-    private HashSet<Animal> observedOffsprings;
-
-
-    public Simulation(int width, int height, int nutritionalEnergy, int initialPopulation, int initialEnergy, int jungleRatio){
+    public Simulation(MapDimensions dimensions, int nutritionalEnergy, int initialPopulation, int initialEnergy){
+        map = new EvolutionMap(dimensions);
+        statistics = new Statistics();
 
         this.nutritionalEnergy = nutritionalEnergy;
         minimumEnergy = initialEnergy/2;
 
-        map = new EvolutionMap(width, height, jungleRatio);
-        stats = new Statistics();
-
         //gen 0
         for (int i = 0; i < initialPopulation; i++) {
-            Animal newAnimal = new Animal(map, initialEnergy);
-            stats.animalBorn(newAnimal);
+
+            Vector2d position = map.getFreeJunglePosition();
+            if (position == null) position = map.getFreePosition();
+
+            Animal newAnimal = new Animal(map, position, initialEnergy);
+            statistics.firstGenAnimalPlaced(newAnimal);
             animalsOnMap.add(newAnimal);
-            newAnimal.addStatisticsObserver(stats);
         }
     }
 
@@ -46,10 +44,13 @@ public class Simulation {
         moveAnimals();
         eatGrass();
         reproduction();
-        map.updateJungle(takenPositions);
-        stats.updateAverageEnergy(animalsOnMap);
+
+        map.updateJungle();
+        statistics.updateAverageEnergy(animalsOnMap);
+
         addNewGrass(nutritionalEnergy);
         turnAnimals();
+
         if (longTermStatistics != null){
             longTermStatistics.update();
         }
@@ -73,9 +74,9 @@ public class Simulation {
             Animal animal = iterator.next();
             if (animal.isDead()){
                 map.removeAnimal(animal);
-                stats.animalDead(animal);
-                if (observedAnimal == animal){
-                    observedAnimalDeathDay = simulationDay;
+                statistics.animalDead(animal);
+                if (animal == animalObserved){
+                    animalObservation.died(simulationDay);
                 }
                 iterator.remove();
             }
@@ -96,7 +97,7 @@ public class Simulation {
         }
     }
 
-    private void eatGrass(){ //poprawić
+    private void eatGrass(){
         for (Vector2d position: takenPositions){
             Grass grass = map.grassAt(position);
             if (grass == null) continue;
@@ -104,55 +105,55 @@ public class Simulation {
             TreeSet<Animal> animalsOnPosition = map.animalsAt(position);
             if (animalsOnPosition.isEmpty()) continue;
 
-            Iterator <Animal> iterator = animalsOnPosition.iterator();
+            Iterator <Animal> iterator = animalsOnPosition.descendingIterator();
             Animal maxEnergyAnimal = iterator.next();
 
-            int maxEnergyCount = 1;
+            int maxEnergyAnimalCount = 1;
 
             while (iterator.hasNext() && iterator.next().getEnergy() == maxEnergyAnimal.getEnergy()){
-                maxEnergyCount++;
+                maxEnergyAnimalCount++;
             }
 
-            iterator = animalsOnPosition.iterator();
+            iterator = animalsOnPosition.descendingIterator();
 
             while (iterator.hasNext()) {
                 Animal currentAnimal = iterator.next();
                 if (currentAnimal.getEnergy() == maxEnergyAnimal.getEnergy()) {
-                    currentAnimal.increaseEnergy(grass.energy / maxEnergyCount);
+                    currentAnimal.increaseEnergy(grass.energy / maxEnergyAnimalCount);
+                } else {
+                    break;
                 }
             }
             map.removeGrass(grass);
-            stats.grassEaten();
+            statistics.grassEaten();
         }
     }
 
     private void reproduction(){
         HashSet <Vector2d> offspringPositions = new HashSet<>();
 
-        for (Vector2d position : takenPositions) {
+        for (Vector2d position: takenPositions) {
             TreeSet<Animal> animalsOnPosition = map.animalsAt(position);
 
             if (animalsOnPosition.size() < 2) continue;
 
-            Iterator<Animal> iterator = animalsOnPosition.iterator();
+            Iterator<Animal> iterator = animalsOnPosition.descendingIterator();
             Animal parent1 = iterator.next();
             Animal parent2 = iterator.next();
-            if (parent1.canBreed(minimumEnergy) && parent2.canBreed(minimumEnergy)) {
+
+            if (parent2.canBreed(minimumEnergy)) {
                 Animal offspring = new Animal(map, parent1, parent2);
-                offspring.addStatisticsObserver(stats);
+
                 animalsOnMap.add(offspring);
-                stats.animalBorn(offspring);
                 offspringPositions.add(offspring.getPosition());
 
-                if (isAnimalObserved){
-                    if (parent1 == observedAnimal || parent2 == observedAnimal){
-                        observedOffsprings.add(offspring);
-                        observedOffspringCount++;
-                        observedChildrenCount++;
-                    }
-                    else if (observedOffsprings.contains(parent1) || observedOffsprings.contains(parent2)){
-                        observedOffsprings.add(offspring);
-                        observedOffspringCount++;
+                statistics.animalBorn(offspring);
+
+                if (animalObserved != null){
+                    if (animalObservation.isParentObserved(parent1, parent2)){
+                        animalObservation.newChild(offspring);
+                    } else if (animalObservation.isParentObservedOffspring(parent1, parent2)){
+                        animalObservation.newOffspring(offspring);
                     }
                 }
             }
@@ -165,44 +166,33 @@ public class Simulation {
 
         if (newGrassPosition != null) {
             map.place(new Grass(newGrassPosition, nutritionalEnergy));
-            stats.newGrass();
+            statistics.newGrass();
         }
 
-        map.updateJungle(takenPositions);
+        map.updateJungle();
         newGrassPosition = map.getFreeJunglePosition();
 
         if (newGrassPosition != null) {
             map.place(new Grass(newGrassPosition, nutritionalEnergy));
-            stats.newGrass();
+            statistics.newGrass();
         }
     }
 
-    public void setObservedAnimal (Animal animal, int days)  throws IllegalStateException {
-        if (isAnimalObserved)
+    public void setObservedAnimal (Animal animal)  throws IllegalStateException {
+        if (animalObserved != null)
             throw new IllegalStateException("an animal is already being observed");
 
-        isAnimalObserved = true;
-        observedAnimal = animal;
-        observedOffspringCount = 0;
-        observedChildrenCount = 0;
-        observedAnimalDeathDay = -1;
-        observedAnimalSetDay = simulationDay;
-        observedOffsprings = new HashSet<Animal>();
+        animalObservation = new AnimalObservation(animal, simulationDay);
+        animalObserved = animal;
     }
 
     public String getObservedAnimalInfo(){
-        String info = "children count: " + observedChildrenCount +
-                "\ntotal offspring count: " + observedOffspringCount;
-
-        if (observedAnimalDeathDay != -1){
-            int deathDay = observedAnimalDeathDay - observedAnimalSetDay;
-            info += "\nday of death: " + deathDay;
-        }
-        return info;
+        return animalObservation.getObservedAnimalInfo();
     }
 
     public void unsetObservedAnimal() {
-        isAnimalObserved = false;
+        animalObserved = null;
+        animalObservation = null;
     }
 
     public void setLongTermStatistics(LongTermStatistics longTermStatistics){

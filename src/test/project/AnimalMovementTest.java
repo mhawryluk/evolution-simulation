@@ -1,11 +1,15 @@
 package project;
 import org.junit.Assert;
 import org.junit.Test;
+import project.engine.Animal;
+import project.engine.EvolutionMap;
+import project.engine.MapDimensions;
+import project.engine.Vector2d;
 
 
 public class AnimalMovementTest {
 
-    private final Animal animal = new Animal(new EvolutionMap(5,5, 50), 0);
+    private final Animal animal = new Animal(new EvolutionMap(new MapDimensions(5,5, 50)), new Vector2d(0,0), 0);
 
     @Test
     public void testMovement(){
@@ -17,22 +21,4 @@ public class AnimalMovementTest {
                         && animal.getPosition().precedes(new Vector2d(4,4)));
         }
     }
-
-    @Test
-    public void testAnimalsSameField(){
-        EvolutionMap map = new EvolutionMap(2, 2, 50);
-        Animal animal1 = new Animal(map, 10);
-        Animal animal2 = new Animal(map, 10);
-        System.out.println(map.placedAnimals);
-        animal1.move();
-        animal2.move();
-        System.out.println(map.placedAnimals);
-        animal1.move();
-        animal2.move();
-        System.out.println(map.placedAnimals);
-        animal1.move();
-        animal2.move();
-        System.out.println(map.placedAnimals);
-    }
-
 }

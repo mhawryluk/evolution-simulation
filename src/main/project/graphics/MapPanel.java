@@ -1,4 +1,6 @@
-package project;
+package project.graphics;
+import project.engine.*;
+
 import javax.jms.IllegalStateException;
 import javax.swing.*;
 import java.awt.*;
@@ -32,8 +34,8 @@ public class MapPanel extends JLayeredPane implements ActionListener {
         setBackground(Color.WHITE);
         timer = new Timer(1000, this);
         timer.start();
-        setBounds(0, 0, squareSize * map.width, squareSize * map.height);
-        setPreferredSize(new Dimension(map.width*squareSize, map.height*squareSize));
+        setBounds(0, 0, squareSize * map.dimensions.width, squareSize * map.dimensions.height);
+        setPreferredSize(new Dimension(map.dimensions.width*squareSize, map.dimensions.height*squareSize));
         setLayout(null);
 
         pics = new Image[]{
@@ -89,8 +91,8 @@ public class MapPanel extends JLayeredPane implements ActionListener {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (animalSelected == null){
-                    Vector2d pressedField = new Vector2d(e.getX()/squareSize, e.getY()/squareSize);
-                    Animal animal = map.getPressedAnimal(pressedField);
+                    Vector2d clickedField = new Vector2d(e.getX()/squareSize, e.getY()/squareSize);
+                    Animal animal = map.getClickedAnimal(clickedField);
                     if (animal != null){
                         animalSelected = animal;
 
@@ -113,7 +115,7 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                                 isAnimalObserved = true;
                                 currentObservationDay = 0;
                                 try{
-                                    simulation.setObservedAnimal(animalSelected, animalObservationDays);
+                                    simulation.setObservedAnimal(animalSelected);
                                 } catch (IllegalStateException exception){
                                     System.out.println(exception.getMessage());
                                     exception.printStackTrace();
@@ -132,10 +134,10 @@ public class MapPanel extends JLayeredPane implements ActionListener {
         Graphics2D g2D = (Graphics2D) g;
         super.repaint();
 
-        for (int i = 0; i < map.width; i++){
-            for (int j = 0; j < map.height; j++){
+        for (int i = 0; i < map.dimensions.width; i++){
+            for (int j = 0; j < map.dimensions.height; j++){
                 Vector2d position = new Vector2d(i, j);
-                if (position.follows(map.jungleLowerLeft) && position.precedes(map.jungleUpperRight)){
+                if (position.follows(map.dimensions.jungleLowerLeft) && position.precedes(map.dimensions.jungleUpperRight)){
                     g2D.setPaint(new Color(35, 144, 35));
                 }
                 else {
@@ -154,7 +156,7 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                 if (animalsAtPosition != null){
                     for (Animal animal : animalsAtPosition) {
                         if (dominantGenome != null && animal.getGenomeString().equals(dominantGenome)){
-                            g2D.setPaint(Color.red);
+                            g2D.setPaint(new Color(153, 187, 255));
                             g2D.fillRect(position.x*squareSize,position.y*squareSize, squareSize, squareSize);
                         }
 

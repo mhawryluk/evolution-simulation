@@ -1,13 +1,16 @@
-package project;
+package project.engine;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Genome {
-    private final int genomeLength = 32;
-    private final int geneTypes = 8;
+    private static final int genomeLength = 32;
+    private static final int geneTypes = 8;
+
     private final byte[] genes = new byte[genomeLength];
 
-    public Genome(){ //randomowy
+    public Genome(){ //random
         for (byte i = 0; i < geneTypes; i++)
             genes[i] = i;
 
@@ -17,7 +20,7 @@ public class Genome {
         Arrays.sort(genes);
     }
 
-    public Genome(Animal fatherGenome, Animal motherGenome){ //genom dziecka
+    public Genome(Animal fatherGenome, Animal motherGenome){ //genome of an offspring
         byte[][] parentGenes = {fatherGenome.getGenes(), motherGenome.getGenes()};
 
         int splitPoint1 = ThreadLocalRandom.current().nextInt(1, genomeLength - 1);
@@ -28,6 +31,7 @@ public class Genome {
         int[] index3 = {1,0,0,0,1,1};
 
         int randomCombination = ThreadLocalRandom.current().nextInt(0, 6);
+
         System.arraycopy(parentGenes[index1[randomCombination]], 0, genes, 0, splitPoint1);
         System.arraycopy(parentGenes[index2[randomCombination]], splitPoint1, genes, splitPoint1, splitPoint2 - splitPoint1);
         System.arraycopy(parentGenes[index3[randomCombination]], splitPoint2, genes, splitPoint2, genomeLength - splitPoint2);
@@ -40,19 +44,22 @@ public class Genome {
             geneTypeCount[geneType]++;
         }
 
-        // zamienianie genów, aby wszystkie występowały, okropne -> poprawić!
+        ArrayList<Byte> geneTypesShuffled = new ArrayList<>();
+        for (byte i = 0; i < geneTypes; i++){
+            geneTypesShuffled.add(ThreadLocalRandom.current().nextInt(0, geneTypesShuffled.size()+1), i);
+        }
+
         for (byte i = 0; i < geneTypes; i++) {
             if (geneTypeCount[i] == 0) {
-                while (true) {
-                    int randomGeneType = ThreadLocalRandom.current().nextInt(0, geneTypes);
-                    if (randomGeneType == i) continue;
-                    if (geneTypeCount[randomGeneType] < 2) continue;
+                for (byte gene: geneTypesShuffled) {
+                    if (geneTypeCount[gene] < 2) continue;
 
                     for (int j = 0; j < genomeLength; j++){
-                        if (genes[j] == randomGeneType){
+                        if (genes[j] == gene){
                             genes[j] = i;
                             geneTypeCount[i]++;
-                            geneTypeCount[randomGeneType]--;
+                            geneTypeCount[gene]--;
+                            break;
                         }
                     }
                     break;

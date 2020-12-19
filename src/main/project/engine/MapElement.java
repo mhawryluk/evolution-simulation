@@ -1,4 +1,4 @@
-package project;
+package project.engine;
 
 public abstract class MapElement{
 

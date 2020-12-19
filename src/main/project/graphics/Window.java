@@ -1,4 +1,7 @@
-package project;
+package project.graphics;
+import project.engine.MapDimensions;
+import project.engine.Simulation;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -10,8 +13,9 @@ public class Window extends JFrame {
 
     public Window(int width, int height, int initialPopulation, int nutritionalEnergy, int initialEnergy, int jungleRatio){
 
-        Simulation simulation1 = new Simulation(width, height, nutritionalEnergy, initialPopulation, initialEnergy, jungleRatio);
-        Simulation simulation2 = new Simulation(width, height, nutritionalEnergy, initialPopulation, initialEnergy, jungleRatio);
+        MapDimensions dimensions = new MapDimensions(width, height , jungleRatio);
+        Simulation simulation1 = new Simulation(dimensions, nutritionalEnergy, initialPopulation, initialEnergy);
+        Simulation simulation2 = new Simulation(dimensions, nutritionalEnergy, initialPopulation, initialEnergy);
 
         int squareSize = Math.min((WIDTH - STAT_PANEL_WIDTH) / (2 * width), HEIGHT / height);
         MapPanel mapPanel1 = new MapPanel(simulation1, squareSize);

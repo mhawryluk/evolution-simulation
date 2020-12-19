@@ -1,21 +1,30 @@
-package project;
+package project.engine;
 
 import java.util.*;
 
 public class Statistics {
 
-    private int animalsCount = 0;
-    private int grassCount = 0;
-    private int animalsDead = 0;
-    private double averageLifespan = 0;
-    private double averageOffspringCount = 0;
-    private double averageEnergy = 0;
+    private int animalsCount;
+    private int grassCount;
+    private int animalsDead;
+    private double averageLifespan;
+    private double averageChildrenCount;
+    private double averageEnergy;
     private final HashMap<String, Integer> genomeCount = new HashMap<>();
 
-    public void animalBorn(Animal animal){
-        averageOffspringCount = ((averageOffspringCount*animalsCount)+2)/(animalsCount+1);
+    public void firstGenAnimalPlaced(Animal animal){
         animalsCount++;
-        String genome = animal.getGenomeString();
+        includeGenome(animal.getGenomeString());
+        averageEnergy = animal.getEnergy();
+    }
+
+    public void animalBorn(Animal animal){
+        averageChildrenCount = ((averageChildrenCount *animalsCount)+2)/(animalsCount+1);
+        animalsCount++;
+        includeGenome(animal.getGenomeString());
+    }
+
+    private void includeGenome(String genome){
         if (!genomeCount.containsKey(genome))
             genomeCount.put(genome, 1);
         else
@@ -23,15 +32,11 @@ public class Statistics {
     }
 
     public void animalDead(Animal animal){
-        averageLifespan = (averageLifespan*animalsDead + animal.getLifespan())/(animalsDead+1);
-        averageOffspringCount = (((averageOffspringCount)*animalsCount) - animal.getOffspringCount())/(animalsCount-1);
+        averageLifespan = (averageLifespan * animalsDead + animal.getLifespan())/(animalsDead + 1);
+        averageChildrenCount = (((averageChildrenCount) * animalsCount) - animal.getChildrenCount())/(animalsCount - 1);
         animalsCount--;
         animalsDead++;
         String genome = animal.getGenomeString();
-        if (!genomeCount.containsKey(genome)){
-            System.out.println(genome);
-            System.out.println(animal.getPosition());
-        }
         genomeCount.replace(genome, genomeCount.get(genome)-1);
     }
 
@@ -51,6 +56,7 @@ public class Statistics {
     public int countGrass(){
         return grassCount;
     }
+
     public int countAnimals(){
         return animalsCount;
     }
@@ -59,8 +65,8 @@ public class Statistics {
         return averageLifespan;
     }
 
-    public double getAverageOffspringCount(){
-        return averageOffspringCount;
+    public double getAverageChildrenCount(){
+        return averageChildrenCount;
     }
 
     public double getAverageEnergy() {

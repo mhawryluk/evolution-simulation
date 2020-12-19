@@ -1,37 +1,30 @@
-package project;
+package project.engine;
+
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class EvolutionMap implements IWorldMap{
-    public final int width;
-    public final int height;
-    private final Vector2d lowerLeft = new Vector2d(0,0);
-    private final Vector2d upperRight;
-    public final Vector2d jungleLowerLeft;
-    public final Vector2d jungleUpperRight;
+public class EvolutionMap {
+
+    public final MapDimensions dimensions;
+
     public final Map<Vector2d, Grass> placedGrass = new LinkedHashMap<>();
     public final HashSet<Vector2d> jungleAvailablePositions = new HashSet<>();
     public final Map<Vector2d, TreeSet<Animal> > placedAnimals = new LinkedHashMap<>();
     private int animalsCount = 0;
     private int grassCount = 0;
 
-    public EvolutionMap(int width, int height, int jungleRatio){
-        this.width = width;
-        this.height = height;
-        upperRight = new Vector2d(width-1, height-1);
-        int jungleWidth = (int)(Math.sqrt((double)jungleRatio/(100+jungleRatio))*width);
-        int jungleHeight = (int)(Math.sqrt((double)jungleRatio/(100+jungleRatio))*height);
-        jungleLowerLeft = new Vector2d((width-jungleWidth)/2, (height - jungleHeight)/2);
-        jungleUpperRight = new Vector2d((width+jungleWidth)/2, (height + jungleHeight)/2);
+    public EvolutionMap(MapDimensions dimensions){
+        this.dimensions = dimensions;
 
-        for (int x = jungleLowerLeft.x;  x <= jungleUpperRight.x; x++)
-            for (int y = jungleLowerLeft.y; y <= jungleUpperRight.y; y++)
+        for (int x = dimensions.jungleLowerLeft.x;  x <= dimensions.jungleUpperRight.x; x++)
+            for (int y = dimensions.jungleLowerLeft.y; y <= dimensions.jungleUpperRight.y; y++)
                 jungleAvailablePositions.add(new Vector2d(x, y));
     }
 
     public boolean place(Animal animal){
         Vector2d position = animal.getPosition();
-        if (!(position.follows(lowerLeft) && position.precedes(upperRight)))
+
+        if (!dimensions.isWithinMap(position))
             throw new IllegalArgumentException(position + " is not a correct place position");
 
         if (!placedAnimals.containsKey(position))
@@ -39,8 +32,8 @@ public class EvolutionMap implements IWorldMap{
 
         placedAnimals.get(position).add(animal);
         jungleAvailablePositions.remove(position);
-
         animalsCount++;
+
         return true;
     }
 
@@ -52,11 +45,6 @@ public class EvolutionMap implements IWorldMap{
         placedGrass.put(position, grass);
         jungleAvailablePositions.remove(position);
         grassCount++;
-    }
-
-    @Override
-    public boolean canMoveTo(Vector2d position) {
-        return true;
     }
 
     public Object objectAt(Vector2d position){
@@ -79,8 +67,9 @@ public class EvolutionMap implements IWorldMap{
     }
 
     public Vector2d wrapPosition(Vector2d position){
-        if (position.follows(lowerLeft) && position.precedes(upperRight)) return position;
-        return new Vector2d((position.x + width)%width, (position.y + height)%height);
+        if (dimensions.isWithinMap(position)) return position;
+        return new Vector2d((position.x + dimensions.width) % dimensions.width,
+                            (position.y + dimensions.height) % dimensions.height);
     }
 
     public Vector2d getFreeJunglePosition(){
@@ -88,26 +77,25 @@ public class EvolutionMap implements IWorldMap{
 
         Iterator <Vector2d> iterator = jungleAvailablePositions.iterator();
         int randNum = ThreadLocalRandom.current().nextInt(0, jungleAvailablePositions.size());
-        for (int i = 0; i < randNum; i++)
-            iterator.next();
+        for (int i = 0; i < randNum; i++) iterator.next();
         return iterator.next();
     }
 
     public Vector2d getFreePosition(){
-        if (animalsCount + grassCount == width*height){
+        if (animalsCount + grassCount == dimensions.allPositionsCount())
             return null;
-        }
 
         while (true){
-            int x = ThreadLocalRandom.current().nextInt(0, width);
-            int y = ThreadLocalRandom.current().nextInt(0, height);
+            int x = ThreadLocalRandom.current().nextInt(0, dimensions.width);
+            int y = ThreadLocalRandom.current().nextInt(0, dimensions.height);
             Vector2d position = new Vector2d(x, y);
-            if (!isInJungle(position) && objectAt(new Vector2d(x, y)) == null)
-                return new Vector2d(x, y);
+            if (!dimensions.isWithinJungle(position) && objectAt(position) == null)
+                return position;
         }
     }
 
     public Vector2d getOffspringPosition(Vector2d position) {
+
         int x = position.x;
         int y = position.y;
         int[] possibleX = {x - 1, x - 1, x - 1, x, x, x + 1, x + 1, x + 1};
@@ -131,6 +119,7 @@ public class EvolutionMap implements IWorldMap{
             if (!isOccupied(newPosition) || objectAt(newPosition) instanceof Grass)
                 return newPosition;
         }
+
         return newPosition;
     }
 
@@ -140,40 +129,40 @@ public class EvolutionMap implements IWorldMap{
     }
 
     public void removeAnimal(Animal animal){
-        Vector2d position = animal.getPosition();
-        placedAnimals.get(position).remove(animal);
+        placedAnimals.get(animal.getPosition()).remove(animal);
         animalsCount--;
     }
 
-    public void updateJungle(HashSet<Vector2d> takenPositions){
+    public void updateJungle(){
         jungleAvailablePositions.clear();
-        for (int x = jungleLowerLeft.x;  x <= jungleUpperRight.x; x++){
-            for (int y = jungleLowerLeft.y; y <= jungleUpperRight.y; y++){
+
+        for (int x = dimensions.jungleLowerLeft.x;  x <= dimensions.jungleUpperRight.x; x++){
+            for (int y = dimensions.jungleLowerLeft.y; y <= dimensions.jungleUpperRight.y; y++){
                 Vector2d position = new Vector2d(x, y);
-                if (!takenPositions.contains(position) && !placedGrass.containsKey(position)){
+                if ((!placedAnimals.containsKey(position) || placedAnimals.get(position).size() == 0)
+                        && !placedGrass.containsKey(position)){
                     jungleAvailablePositions.add(new Vector2d(x, y));
                 }
             }
         }
+
     }
 
-    public boolean isInJungle(Vector2d position){
-        return position.follows(jungleLowerLeft) && position.precedes(jungleUpperRight);
-    }
-
-    public Animal getPressedAnimal(Vector2d position){
+    public Animal getClickedAnimal(Vector2d position){
         TreeSet<Animal> animalsOnPosition = placedAnimals.get(position);
         if (animalsOnPosition == null || animalsOnPosition.size() == 0) return null;
-        return animalsOnPosition.first();
+        return animalsOnPosition.last();
     }
 
 
     public void positionChanged(Vector2d oldPosition, Animal element){
         placedAnimals.get(oldPosition).remove(element);
         Vector2d newPosition = element.getPosition();
-        if (!placedAnimals.containsKey(newPosition)){
+
+        if (!placedAnimals.containsKey(newPosition))
             placedAnimals.put(newPosition, new TreeSet<>(Comparator.comparing(Animal::getEnergy)));
-        }
+
         placedAnimals.get(newPosition).add(element);
     }
+
 }

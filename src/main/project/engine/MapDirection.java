@@ -1,4 +1,4 @@
-package project;
+package project.engine;
 
 public enum MapDirection {
     NORTH(0,"\u2191", new Vector2d(0, -1)),
@@ -14,9 +14,6 @@ public enum MapDirection {
     private final Vector2d vector;
     private final int index;
 
-    private static final MapDirection[] directions = {NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORTH_WEST};
-
-
     MapDirection(int index, String shortName, Vector2d vector){
         this.index = index;
         this.shortName = shortName;
@@ -29,13 +26,37 @@ public enum MapDirection {
     }
 
     public MapDirection turn(int turnValue){
-        return directions[(index + turnValue)%8];
+        return getDirectionFromIndex((index + turnValue)%8);
     }
 
     public Vector2d toVector(){
         return vector;
     }
+
     public int getIndex(){
         return index;
+    }
+
+    private MapDirection getDirectionFromIndex(int index){
+        switch(index){
+            case 0:
+                return NORTH;
+            case 1:
+                return NORTH_EAST;
+            case 2:
+                return EAST;
+            case 3:
+                return SOUTH_EAST;
+            case 4:
+                return SOUTH;
+            case 5:
+                return SOUTH_WEST;
+            case 6:
+                return WEST;
+            case 7:
+                return NORTH_WEST;
+            default:
+                throw new IllegalArgumentException("no MapDirection object with index " + index);
+        }
     }
 }
