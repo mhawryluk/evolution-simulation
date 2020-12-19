@@ -16,9 +16,12 @@ public class MapPanel extends JLayeredPane implements ActionListener {
     private int animalObservationDays;
     private boolean isAnimalObserved = false;
     private int currentObservationDay = 0;
-    private final JFormattedTextField genomeField = new JFormattedTextField();
     private String dominantGenome = null;
     private final Image[] pics;
+    private Popup popup;
+    private int popupX;
+    private int popupY;
+
 
     Vector2d mousePressedPosition = null;
 
@@ -32,7 +35,6 @@ public class MapPanel extends JLayeredPane implements ActionListener {
         setBounds(0, 0, squareSize * map.width, squareSize * map.height);
         setPreferredSize(new Dimension(map.width*squareSize, map.height*squareSize));
         setLayout(null);
-        add(genomeField, DRAG_LAYER);
 
         pics = new Image[]{
                 new ImageIcon("pics/chick-up.png").getImage().getScaledInstance(squareSize, squareSize, Image.SCALE_DEFAULT),
@@ -56,24 +58,29 @@ public class MapPanel extends JLayeredPane implements ActionListener {
             @Override
             public void mouseMoved(MouseEvent e) {
                 int x = e.getX(), y = e.getY();
-                if (x==0 && y==0) return;
-                TreeSet <Animal> animalsOnPosition = map.animalsAt(new Vector2d(x/squareSize, y/squareSize));
-                if (animalsOnPosition == null) return;
-                if (animalsOnPosition.size() == 0) return;
+                int newPopupX = x/squareSize;
+                int newPopupY = y/squareSize;
+
+                TreeSet <Animal> animalsOnPosition = map.animalsAt(new Vector2d(newPopupX, newPopupY));
+                if (animalsOnPosition == null || animalsOnPosition.size() == 0) {
+                    if (popup != null){
+                        popup.hide();
+                    }
+                    popupX = -1;
+                    popupY = -1;
+                    return;
+                }
 
                 Animal animalHoveredOver = animalsOnPosition.first(); // last?
 
-                try {
-                    genomeField.setBounds(getMousePosition().x + 10, getMousePosition().y+10, 300, 30);
-                    genomeField.setText(animalHoveredOver.getGenomeString());
-                    genomeField.setLocation(getMousePosition().x+10, getMousePosition().y+10);
-                    genomeField.setForeground(Color.blue);
-                    genomeField.setBackground(Color.white);
-                    genomeField.setVisible(true);
-                    genomeField.setOpaque(true);
-                    genomeField.repaint();
-                } catch (NullPointerException exception){
-                    genomeField.setVisible(false);
+                if (newPopupX != popupX && newPopupY != popupY){
+                    if (popup != null){
+                        popup.hide();
+                    }
+                    popup = PopupFactory.getSharedInstance().getPopup(e.getComponent(), new JLabel(animalHoveredOver.getGenomeString()), e.getXOnScreen() + 20, e.getYOnScreen()+squareSize/2);
+                    popup.show();
+                    popupX = newPopupX;
+                    popupY = newPopupY;
                 }
             }
         });
@@ -166,8 +173,6 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                 }
             }
         }
-
-        genomeField.paint(g);
         mousePressedPosition = null;
     }
 

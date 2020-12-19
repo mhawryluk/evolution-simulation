@@ -1,5 +1,4 @@
 package project;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -122,19 +121,36 @@ public class StatPanel extends JPanel implements ActionListener {
                 showingDominant = true;
             }
         } else if (e.getSource() == saveLongTermStatistics){
-            String input = (String) JOptionPane.showInputDialog(null,
-                    "enter number of generations after which average statistics will be saved to file",
-                    "Long term statistics", JOptionPane.QUESTION_MESSAGE,
-                    null, null, "10");
 
-            try {
-                int numGenerations = Integer.parseInt(input);
-                mapPanel.simulation.setLongTermStatistics(new LongTermStatistics(simulation.stats, numGenerations, "statistics_results.txt"));
-            } catch (Exception exception){
-                exception.printStackTrace();
-                System.out.println(exception.getMessage());
+            JTextField fileField = new JTextField();
+            JTextField nField = new JTextField();
+
+            JPanel inputPanel = new JPanel();
+            JLabel nLabel = new JLabel("number of generations after which average statistics will be saved to file: ");
+            nLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+            inputPanel.add(nLabel);
+            inputPanel.add(nField);
+            inputPanel.setSize(500, 200);
+            inputPanel.setLayout(new GridLayout(2,1));
+            JLabel fileLabel = new JLabel("file name: ");
+            fileLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+            inputPanel.add(fileLabel);
+            inputPanel.add(fileField);
+
+            int result = JOptionPane.showConfirmDialog(null, inputPanel,
+                    "Long term statistics", JOptionPane.OK_CANCEL_OPTION);
+
+            if (result == JOptionPane.OK_OPTION) {
+
+                try {
+                    int numGenerations = Integer.parseInt(nField.getText());
+                    String fileName = fileField.getText();
+                    mapPanel.simulation.setLongTermStatistics(new LongTermStatistics(simulation.stats, numGenerations, fileName));
+                } catch (Exception exception){
+                    exception.printStackTrace();
+                    System.out.println(exception.getMessage());
+                }
             }
-
         }
         repaint();
     }
