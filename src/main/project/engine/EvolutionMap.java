@@ -8,8 +8,8 @@ public class EvolutionMap {
     public final MapDimensions dimensions;
 
     public final Map<Vector2d, Grass> placedGrass = new LinkedHashMap<>();
-    public final HashSet<Vector2d> jungleAvailablePositions = new HashSet<>();
-    public final Map<Vector2d, TreeSet<Animal> > placedAnimals = new LinkedHashMap<>();
+    private final HashSet<Vector2d> jungleAvailablePositions = new HashSet<>();
+    private final Map<Vector2d, ArrayList<Animal>> placedAnimals = new LinkedHashMap<>();
     private int animalsCount = 0;
     private int grassCount = 0;
 
@@ -28,7 +28,7 @@ public class EvolutionMap {
             throw new IllegalArgumentException(position + " is not a correct place position");
 
         if (!placedAnimals.containsKey(position))
-            placedAnimals.put(position, new TreeSet<>(Comparator.comparing(Animal::getEnergy)));
+            placedAnimals.put(position, new ArrayList<>());
 
         placedAnimals.get(position).add(animal);
         jungleAvailablePositions.remove(position);
@@ -54,8 +54,15 @@ public class EvolutionMap {
         return placedGrass.get(position);
     }
 
-    public TreeSet<Animal> animalsAt(Vector2d position){
+    public ArrayList<Animal> animalsAt(Vector2d position){
         return placedAnimals.get(position);
+    }
+
+    public ArrayList<Animal> animalsAtSortedByEnergy(Vector2d position){
+        ArrayList<Animal> animalsAtPosition = placedAnimals.get(position);
+        animalsAtPosition.sort(Comparator.comparing(Animal::getEnergy));
+        Collections.reverse(animalsAtPosition);
+        return animalsAtPosition;
     }
 
     public Grass grassAt(Vector2d position){
@@ -85,12 +92,29 @@ public class EvolutionMap {
         if (animalsCount + grassCount == dimensions.allPositionsCount())
             return null;
 
-        while (true){
-            int x = ThreadLocalRandom.current().nextInt(0, dimensions.width);
-            int y = ThreadLocalRandom.current().nextInt(0, dimensions.height);
-            Vector2d position = new Vector2d(x, y);
-            if (!dimensions.isWithinJungle(position) && objectAt(position) == null)
-                return position;
+        if (dimensions.jungleUpperRight.equals(dimensions.upperRight))
+            return null;
+
+        if (dimensions.jungleRatio > 70 || animalsCount + grassCount > 0.7 * dimensions.allPositionsCount()){
+            ArrayList<Vector2d> freePositions = new ArrayList<>();
+            for (int i = 0; i < dimensions.jungleUpperRight.x; i++){
+                for (int j = 0; j < dimensions.jungleUpperRight.y; j++){
+                    Vector2d position = new Vector2d(i, j);
+                    if (!dimensions.isWithinJungle(position) && objectAt(position) == null)
+                        freePositions.add(position);
+                }
+            }
+            return freePositions.get(ThreadLocalRandom.current().nextInt(0, freePositions.size()));
+        }
+
+        else {
+            while (true){
+                int x = ThreadLocalRandom.current().nextInt(0, dimensions.width);
+                int y = ThreadLocalRandom.current().nextInt(0, dimensions.height);
+                Vector2d position = new Vector2d(x, y);
+                if (!dimensions.isWithinJungle(position) && objectAt(position) == null)
+                   return position;
+            }
         }
     }
 
@@ -103,7 +127,7 @@ public class EvolutionMap {
 
         Vector2d newPosition = position;
 
-        for (int i = 0; i <= 8; i++) {
+        for (int i = 0; i < 8; i++) {
             int randIndex = ThreadLocalRandom.current().nextInt(i, 8);
 
             int temp = possibleX[i];
@@ -149,9 +173,9 @@ public class EvolutionMap {
     }
 
     public Animal getClickedAnimal(Vector2d position){
-        TreeSet<Animal> animalsOnPosition = placedAnimals.get(position);
+        ArrayList<Animal> animalsOnPosition = placedAnimals.get(position);
         if (animalsOnPosition == null || animalsOnPosition.size() == 0) return null;
-        return animalsOnPosition.last();
+        return animalsOnPosition.get(0);
     }
 
 
@@ -160,7 +184,7 @@ public class EvolutionMap {
         Vector2d newPosition = element.getPosition();
 
         if (!placedAnimals.containsKey(newPosition))
-            placedAnimals.put(newPosition, new TreeSet<>(Comparator.comparing(Animal::getEnergy)));
+            placedAnimals.put(newPosition, new ArrayList<>());
 
         placedAnimals.get(newPosition).add(element);
     }

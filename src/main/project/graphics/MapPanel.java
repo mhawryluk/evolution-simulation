@@ -1,11 +1,9 @@
 package project.graphics;
 import project.engine.*;
-
-import javax.jms.IllegalStateException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.TreeSet;
+import java.util.ArrayList;
 
 public class MapPanel extends JLayeredPane implements ActionListener {
 
@@ -63,8 +61,8 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                 int newPopupX = x/squareSize;
                 int newPopupY = y/squareSize;
 
-                TreeSet <Animal> animalsOnPosition = map.animalsAt(new Vector2d(newPopupX, newPopupY));
-                if (animalsOnPosition == null || animalsOnPosition.size() == 0) {
+                ArrayList<Animal> animalsAtPosition = map.animalsAt(new Vector2d(newPopupX, newPopupY));
+                if (animalsAtPosition == null || animalsAtPosition.size() == 0) {
                     if (popup != null){
                         popup.hide();
                     }
@@ -73,7 +71,7 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                     return;
                 }
 
-                Animal animalHoveredOver = animalsOnPosition.first(); // last?
+                Animal animalHoveredOver = map.animalsAtSortedByEnergy(new Vector2d(newPopupX, newPopupY)).get(0);
 
                 if (newPopupX != popupX && newPopupY != popupY){
                     if (popup != null){
@@ -152,9 +150,9 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                     g2D.drawImage(pics[8+ ((position.x + position.y)%2)],  position.x*squareSize, position.y*squareSize, null, this);
                 }
 
-                TreeSet<Animal> animalsAtPosition = map.animalsAt(position);
+                ArrayList<Animal> animalsAtPosition = map.animalsAt(position);
                 if (animalsAtPosition != null){
-                    for (Animal animal : animalsAtPosition) {
+                    for (Animal animal: animalsAtPosition) {
                         if (dominantGenome != null && animal.getGenomeString().equals(dominantGenome)){
                             g2D.setPaint(new Color(153, 187, 255));
                             g2D.fillRect(position.x*squareSize,position.y*squareSize, squareSize, squareSize);

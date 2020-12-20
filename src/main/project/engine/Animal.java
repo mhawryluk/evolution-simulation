@@ -1,40 +1,24 @@
 package project.engine;
 
-import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Animal extends MapElement {
     private MapDirection orientation;
     private final EvolutionMap map;
     private final Genome genes;
-    private int lifespan = 0;
-    private final ArrayList <Animal> children = new ArrayList<>();
+    private int lifespan;
+    private int childrenCount;
 
-    public Animal(EvolutionMap map, Vector2d position, int energy){ //for initial population
-        this.map = map;
-        this.energy = energy;
-
-        this.position = position;
-
-        orientation = MapDirection.NORTH.turn(ThreadLocalRandom.current().nextInt(0, 8));
-        genes = new Genome();
-
-        map.place(this);
+    public Animal(EvolutionMap map, Vector2d position, int energy){
+        this(map, position, energy, new Genome());
     }
 
-    public Animal(EvolutionMap map, Animal parent1, Animal parent2){ //for offsprings
+    public Animal(EvolutionMap map, Vector2d position, int energy, Genome genes){
         this.map = map;
-        genes = new Genome(parent1, parent2);
-        position = map.getOffspringPosition(parent1.getPosition());
-        orientation = MapDirection.NORTH.turn(ThreadLocalRandom.current().nextInt(0, 8));
-
-        energy = parent1.energy/4 + parent2.energy/4;
-
-        parent1.energy *= 0.75;
-        parent2.energy *= 0.75;
-
-        parent1.addOffspring(this);
-        parent2.addOffspring(this);
+        this.position = position;
+        this.energy = energy;
+        this.orientation = MapDirection.NORTH.turn(ThreadLocalRandom.current().nextInt(0, 8));
+        this.genes = genes;
         map.place(this);
     }
 
@@ -52,9 +36,12 @@ public class Animal extends MapElement {
         lifespan++;
     }
 
-    public void turn(){
-        int turnValue = genes.getRandomGene();
+    public void turn(int turnValue){
         orientation = orientation.turn(turnValue);
+    }
+
+    public int getRandomTurnValue(){
+        return genes.getRandomGene();
     }
 
     private void positionChanged(Vector2d oldPosition){
@@ -69,8 +56,8 @@ public class Animal extends MapElement {
         energy--;
     }
 
-    public boolean canBreed(int minimumEnergy){
-        return energy >= minimumEnergy;
+    public void energyLost(){
+        energy *= 0.75;
     }
 
     public void increaseEnergy(int nutrition){
@@ -85,21 +72,8 @@ public class Animal extends MapElement {
         return lifespan;
     }
 
-    public void addOffspring(Animal animal){
-        children.add(animal);
-    }
-
-    public int getAllOffspringCount(){
-        int offspringCount = 0;
-        for (Animal offSpring: children){
-            offspringCount ++;
-            offspringCount += offSpring.getAllOffspringCount();
-        }
-        return offspringCount;
-    }
-
     public int getChildrenCount(){
-        return children.size();
+        return childrenCount;
     }
 
     public MapDirection getOrientation(){
@@ -109,6 +83,8 @@ public class Animal extends MapElement {
     public byte[] getGenes() {
         return genes.getGenome();
     }
+
+    public void newChild(){ childrenCount++;}
 
     public String getGenomeString(){
         return genes.toString();

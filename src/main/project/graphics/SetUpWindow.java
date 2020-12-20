@@ -1,5 +1,4 @@
 package project.graphics;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.json.JSONObject;
 
 public class SetUpWindow extends JFrame implements ActionListener {
 

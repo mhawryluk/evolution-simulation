@@ -1,5 +1,0 @@
-animal count: 6.0
-grass count: 12.0
-energy: 9.0
-children count: 2.0
-lifespan: 0.0

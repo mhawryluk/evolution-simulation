@@ -49,8 +49,8 @@ public class Statistics {
         grassCount++;
     }
 
-    public void grassEaten(){
-        grassCount--;
+    public void grassEaten(int grassEatenCount){
+        grassCount -= grassEatenCount;
     }
 
     public int countGrass(){

@@ -2,9 +2,8 @@ package project.engine;
 
 public class Grass extends MapElement {
 
-    public Grass(Vector2d position, int energy){
+    public Grass(Vector2d position){
         this.position = position;
-        this.energy = energy;
     }
 
     @Override

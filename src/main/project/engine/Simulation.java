@@ -1,29 +1,29 @@
 package project.engine;
 
-import javax.jms.IllegalStateException;
 import java.util.*;
 
-public class Simulation {
+public class Simulation{
 
     public final EvolutionMap map;
     public final Statistics statistics;
-    private LongTermStatistics longTermStatistics = null;
-    private AnimalObservation animalObservation = null;
+    private LongTermStatistics longTermStatistics;
+    private AnimalObservation animalObservation;
+    private final ReproductionEngine reproductionEngine;
+    private final GrassConsumptionEngine grassConsumptionEngine;
 
     private final LinkedHashSet<Animal> animalsOnMap = new LinkedHashSet<>();
     private HashSet<Vector2d> takenPositions;
     private Animal animalObserved = null;
 
-    private final int nutritionalEnergy;
     public final int minimumEnergy;
     private int simulationDay = 0;
 
     public Simulation(MapDimensions dimensions, int nutritionalEnergy, int initialPopulation, int initialEnergy){
         map = new EvolutionMap(dimensions);
         statistics = new Statistics();
-
-        this.nutritionalEnergy = nutritionalEnergy;
         minimumEnergy = initialEnergy/2;
+        reproductionEngine = new ReproductionEngine(map, initialEnergy);
+        grassConsumptionEngine = new GrassConsumptionEngine(map, nutritionalEnergy);
 
         //gen 0
         for (int i = 0; i < initialPopulation; i++) {
@@ -41,14 +41,11 @@ public class Simulation {
         simulationDay++;
         decreaseEnergy();
         removeDead();
-        moveAnimals();
-        eatGrass();
-        reproduction();
-
-        map.updateJungle();
+        move();
+        eat();
+        reproduce();
         statistics.updateAverageEnergy(animalsOnMap);
-
-        addNewGrass(nutritionalEnergy);
+        addNewGrass();
         turnAnimals();
 
         if (longTermStatistics != null){
@@ -57,14 +54,15 @@ public class Simulation {
     }
 
     private void decreaseEnergy(){
-        for (Animal animal: animalsOnMap){
+        for (Animal animal: animalsOnMap)
             animal.decreaseEnergy();
-        }
+
     }
 
     private void turnAnimals(){
         for (Animal animal: animalsOnMap){
-            animal.turn();
+            int turnValue = animal.getRandomTurnValue();
+            animal.turn(turnValue);
         }
     }
 
@@ -83,7 +81,7 @@ public class Simulation {
         }
     }
 
-    private void moveAnimals(){
+    private void move(){
         for (Animal animal: animalsOnMap){
             animal.move();
         }
@@ -97,75 +95,25 @@ public class Simulation {
         }
     }
 
-    private void eatGrass(){
-        for (Vector2d position: takenPositions){
-            Grass grass = map.grassAt(position);
-            if (grass == null) continue;
+    private void eat(){
+        int grassEatenCount = grassConsumptionEngine.consumption(takenPositions);
+        statistics.grassEaten(grassEatenCount);
+    }
 
-            TreeSet<Animal> animalsOnPosition = map.animalsAt(position);
-            if (animalsOnPosition.isEmpty()) continue;
-
-            Iterator <Animal> iterator = animalsOnPosition.descendingIterator();
-            Animal maxEnergyAnimal = iterator.next();
-
-            int maxEnergyAnimalCount = 1;
-
-            while (iterator.hasNext() && iterator.next().getEnergy() == maxEnergyAnimal.getEnergy()){
-                maxEnergyAnimalCount++;
-            }
-
-            iterator = animalsOnPosition.descendingIterator();
-
-            while (iterator.hasNext()) {
-                Animal currentAnimal = iterator.next();
-                if (currentAnimal.getEnergy() == maxEnergyAnimal.getEnergy()) {
-                    currentAnimal.increaseEnergy(grass.energy / maxEnergyAnimalCount);
-                } else {
-                    break;
-                }
-            }
-            map.removeGrass(grass);
-            statistics.grassEaten();
+    private void reproduce(){
+        LinkedList<Animal> newOffsprings = reproductionEngine.reproduction(takenPositions);
+        for (Animal offspring: newOffsprings){
+            takenPositions.add(offspring.getPosition());
+            statistics.animalBorn(offspring);
+            animalsOnMap.add(offspring);
         }
     }
 
-    private void reproduction(){
-        HashSet <Vector2d> offspringPositions = new HashSet<>();
-
-        for (Vector2d position: takenPositions) {
-            TreeSet<Animal> animalsOnPosition = map.animalsAt(position);
-
-            if (animalsOnPosition.size() < 2) continue;
-
-            Iterator<Animal> iterator = animalsOnPosition.descendingIterator();
-            Animal parent1 = iterator.next();
-            Animal parent2 = iterator.next();
-
-            if (parent2.canBreed(minimumEnergy)) {
-                Animal offspring = new Animal(map, parent1, parent2);
-
-                animalsOnMap.add(offspring);
-                offspringPositions.add(offspring.getPosition());
-
-                statistics.animalBorn(offspring);
-
-                if (animalObserved != null){
-                    if (animalObservation.isParentObserved(parent1, parent2)){
-                        animalObservation.newChild(offspring);
-                    } else if (animalObservation.isParentObservedOffspring(parent1, parent2)){
-                        animalObservation.newOffspring(offspring);
-                    }
-                }
-            }
-        }
-        takenPositions.addAll(offspringPositions);
-    }
-
-    private void addNewGrass(int nutritionalEnergy){
+    private void addNewGrass(){
         Vector2d newGrassPosition = map.getFreePosition();
 
         if (newGrassPosition != null) {
-            map.place(new Grass(newGrassPosition, nutritionalEnergy));
+            map.place(new Grass(newGrassPosition));
             statistics.newGrass();
         }
 
@@ -173,7 +121,7 @@ public class Simulation {
         newGrassPosition = map.getFreeJunglePosition();
 
         if (newGrassPosition != null) {
-            map.place(new Grass(newGrassPosition, nutritionalEnergy));
+            map.place(new Grass(newGrassPosition));
             statistics.newGrass();
         }
     }
@@ -184,6 +132,7 @@ public class Simulation {
 
         animalObservation = new AnimalObservation(animal, simulationDay);
         animalObserved = animal;
+        reproductionEngine.setAnimalObservation(animalObservation);
     }
 
     public String getObservedAnimalInfo(){
@@ -193,6 +142,7 @@ public class Simulation {
     public void unsetObservedAnimal() {
         animalObserved = null;
         animalObservation = null;
+        reproductionEngine.unsetAnimalObservation();
     }
 
     public void setLongTermStatistics(LongTermStatistics longTermStatistics){

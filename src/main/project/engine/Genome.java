@@ -5,12 +5,13 @@ import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Genome {
+
     private static final int genomeLength = 32;
     private static final int geneTypes = 8;
 
     private final byte[] genes = new byte[genomeLength];
 
-    public Genome(){ //random
+    public Genome(){
         for (byte i = 0; i < geneTypes; i++)
             genes[i] = i;
 
@@ -20,8 +21,8 @@ public class Genome {
         Arrays.sort(genes);
     }
 
-    public Genome(Animal fatherGenome, Animal motherGenome){ //genome of an offspring
-        byte[][] parentGenes = {fatherGenome.getGenes(), motherGenome.getGenes()};
+    public Genome(Animal parent1, Animal parent2){ //genome of an offspring
+        byte[][] parentGenes = {parent1.getGenes(), parent2.getGenes()};
 
         int splitPoint1 = ThreadLocalRandom.current().nextInt(1, genomeLength - 1);
         int splitPoint2 = ThreadLocalRandom.current().nextInt(splitPoint1, genomeLength);

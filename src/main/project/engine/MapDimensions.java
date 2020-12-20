@@ -8,10 +8,12 @@ public class MapDimensions {
     public final Vector2d upperRight;
     public final Vector2d jungleLowerLeft;
     public final Vector2d jungleUpperRight;
+    public final int jungleRatio;
 
     public MapDimensions(int width, int height, int jungleRatio){
         this.width = width;
         this.height = height;
+        this.jungleRatio = jungleRatio;
 
         upperRight = new Vector2d(width-1, height-1);
 
@@ -19,7 +21,7 @@ public class MapDimensions {
         int jungleHeight = (int)(Math.sqrt(jungleRatio/100.0)*height);
 
         jungleLowerLeft = new Vector2d((width-jungleWidth)/2, (height - jungleHeight)/2);
-        jungleUpperRight = new Vector2d((width+jungleWidth)/2, (height + jungleHeight)/2);
+        jungleUpperRight = new Vector2d((width+jungleWidth-1)/2, (height + jungleHeight-1)/2);
     }
 
     public boolean isWithinMap(Vector2d position){

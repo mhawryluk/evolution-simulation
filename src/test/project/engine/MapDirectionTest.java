@@ -1,7 +1,6 @@
-package project;
+package project.engine;
 import org.junit.Assert;
 import org.junit.Test;
-import project.engine.MapDirection;
 
 
 public class MapDirectionTest {
@@ -15,6 +14,16 @@ public class MapDirectionTest {
         Assert.assertEquals(MapDirection.NORTH.turn(0), MapDirection.NORTH);
         Assert.assertEquals(MapDirection.SOUTH_WEST.turn(0), MapDirection.SOUTH_WEST);
         Assert.assertEquals(MapDirection.NORTH_WEST.turn(2), MapDirection.NORTH_EAST);
+    }
+
+    @Test
+    public void toVectorTest(){
+        Assert.assertEquals(new Vector2d(0,-1), MapDirection.NORTH.toVector());
+        Assert.assertEquals(new Vector2d(1,1), MapDirection.SOUTH_EAST.toVector());
+
+        MapDirection orientation = MapDirection.EAST;
+        orientation = orientation.turn(2);
+        Assert.assertEquals(new Vector2d(0,1), orientation.toVector());
     }
 
 }
