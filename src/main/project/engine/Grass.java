@@ -6,9 +6,4 @@ public class Grass extends MapElement {
         this.position = position;
         map.place(this);
     }
-
-    @Override
-    public String toString(){
-        return "*";
-    }
 }

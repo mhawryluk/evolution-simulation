@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
 import org.json.JSONObject;
 
 public class SetUpWindow extends JFrame implements ActionListener {
@@ -18,6 +19,7 @@ public class SetUpWindow extends JFrame implements ActionListener {
     private final SetupInputLabel labelWidth;
     private final SetupInputLabel labelHeight;
     private final SetupInputLabel labelJungleRatio;
+    private final SetupInputLabel labelMoveEnergy;
 
 
     public SetUpWindow() {
@@ -31,13 +33,16 @@ public class SetUpWindow extends JFrame implements ActionListener {
         labelInitialPopulation = new SetupInputLabel("initial population count: ");
         add(labelInitialPopulation);
 
-        labelNutritionalEnergy = new SetupInputLabel("nutritional energy of grass: ");
+        labelNutritionalEnergy = new SetupInputLabel("plant energy: ");
         add(labelNutritionalEnergy);
+
+        labelMoveEnergy = new SetupInputLabel("move energy: ");
+        add(labelMoveEnergy);
 
         labelInitialEnergy = new SetupInputLabel("initial energy of gen 0: ");
         add(labelInitialEnergy);
 
-        labelJungleRatio = new SetupInputLabel("jungle ratio (in percents): ");
+        labelJungleRatio = new SetupInputLabel("jungle ratio (>0, in percents): ");
         add(labelJungleRatio);
 
         goButton = new JButton();
@@ -46,7 +51,7 @@ public class SetUpWindow extends JFrame implements ActionListener {
         goButton.addActionListener(this);
         add(goButton);
 
-        try{
+        try {
             String json = Files.readString(Path.of("parameters.json"));
             JSONObject jsonObject = new JSONObject(json);
 
@@ -54,18 +59,21 @@ public class SetUpWindow extends JFrame implements ActionListener {
             if (jungleRatio > 1 && jungleRatio <= 100) labelJungleRatio.setValue(jsonObject.getInt("jungleRatio"));
 
             int width = jsonObject.getInt("width");
-            if (width > 0) labelWidth.setValue(width);
+            if (width > 0 && width < 200) labelWidth.setValue(width);
 
             int height = jsonObject.getInt("height");
-            if (height > 0) labelHeight.setValue(jsonObject.getInt("height"));
+            if (height > 0 && height < 200) labelHeight.setValue(height);
 
             int initialPopulation = jsonObject.getInt("initialPopulation");
             if (initialPopulation > 0) labelInitialPopulation.setValue(initialPopulation);
 
-            int initialEnergy = jsonObject.getInt("initialEnergy");
-            if (initialEnergy > 0) labelInitialEnergy.setValue(jsonObject.getInt("initialEnergy"));
+            int initialEnergy = jsonObject.getInt("startEnergy");
+            if (initialEnergy > 0) labelInitialEnergy.setValue(initialEnergy);
 
-            labelNutritionalEnergy.setValue(jsonObject.getInt("nutritionalEnergy"));
+            int moveEnergy = jsonObject.getInt("moveEnergy");
+            if (moveEnergy > 0) labelMoveEnergy.setValue(moveEnergy);
+
+            labelNutritionalEnergy.setValue(jsonObject.getInt("plantEnergy"));
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
@@ -73,30 +81,31 @@ public class SetUpWindow extends JFrame implements ActionListener {
 
         setTitle("Evolution Simulation Setup");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(7,1));
+        setLayout(new GridLayout(8, 1));
         setSize(300, 400);
         Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
-        setLocation(screenDim.width/2-getSize().width/2, screenDim.height/2-getSize().height/2);
+        setLocation(screenDim.width / 2 - getSize().width / 2, screenDim.height / 2 - getSize().height / 2);
         setVisible(true);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getSource() == goButton){
+        if (e.getSource() == goButton) {
             int nutritionalEnergy = labelNutritionalEnergy.getValue();
             int initialPopulation = labelInitialPopulation.getValue();
             int initialEnergy = labelInitialEnergy.getValue();
             int width = labelWidth.getValue();
             int height = labelHeight.getValue();
             int jungleRatio = labelJungleRatio.getValue();
+            int moveEnergy = labelMoveEnergy.getValue();
 
-            if (initialPopulation > width * height){
+            if (initialPopulation > width * height) {
                 JOptionPane.showMessageDialog(null, "initial population is bigger than available fields on map", "error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            Window window = new Window(width, height, initialPopulation, nutritionalEnergy, initialEnergy, jungleRatio);
+            new SimulationWindow(width, height, initialPopulation, nutritionalEnergy, initialEnergy, jungleRatio, moveEnergy);
             dispose();
         }
     }

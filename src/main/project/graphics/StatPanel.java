@@ -1,4 +1,5 @@
 package project.graphics;
+
 import project.engine.EvolutionMap;
 import project.engine.LongTermStatistics;
 import project.engine.Simulation;
@@ -21,101 +22,80 @@ public class StatPanel extends JPanel implements ActionListener {
     private final JLabel grassCountLabel;
     private final JLabel dominantGenomeLabel;
     private final JLabel averageLifespanLabel;
-    private final JLabel dominantGenomeTextLabel;
     private final JLabel averageOffspringCount;
     private final JLabel averageEnergyField;
     public int squareSize = 40;
-    private final int panelWidth = 300;
-    private final Color BACKGROUND = Color.white;
-    private final Color TEXT_COLOR = Color.black;
+    private static final int panelWidth = 300;
+    private static final Color BACKGROUND = Color.white;
+    private static final Color TEXT_COLOR = Color.black;
     private boolean stopped = false;
     private boolean showingDominant = false;
-    private DecimalFormat df = new DecimalFormat("#.#");
+    private final DecimalFormat df = new DecimalFormat("#.#");
 
-    public StatPanel(Simulation simulation, MapPanel mapPanel, String name){
+    public StatPanel(Simulation simulation, MapPanel mapPanel, String name) {
 
         this.mapPanel = mapPanel;
         this.simulation = simulation;
         EvolutionMap map = simulation.map;
-        mapPanel.statPanel = this;
+        mapPanel.setStatPanel(this);
 
         setBackground(BACKGROUND);
         setPreferredSize(new Dimension(panelWidth, squareSize * map.dimensions.height));
-        setLayout(new GridLayout(11,1,5,5));
+        setLayout(new GridLayout(11, 1, 5, 5));
 
-        JLabel nameLabel = new JLabel();
-        nameLabel.setText(name);
-        nameLabel.setBackground(Color.darkGray);
-        add(nameLabel);
-
-        startStopButton = new JButton();
-        startStopButton.setText("STOP");
+        JLabel nameLabel = new JLabel(name);
+        startStopButton = new JButton("STOP");
         startStopButton.addActionListener(this);
-        add(startStopButton);
-
-        showDominantButton = new JButton();
-        showDominantButton.setText("HIGHLIGHT DOMINANT GENOME");
+        showDominantButton = new JButton("HIGHLIGHT DOMINANT GENOME");
         showDominantButton.addActionListener(this);
-        add(showDominantButton);
-
-        saveLongTermStatistics = new JButton();
-        saveLongTermStatistics.setText("GENERATE STATISTICS");
+        saveLongTermStatistics = new JButton("GENERATE STATISTICS");
         saveLongTermStatistics.addActionListener(this);
-        add(saveLongTermStatistics);
-
-        animalsCountLabel = new JLabel();
-        animalsCountLabel.setText("animals on map:" + simulation.statistics.countAnimals());
-        add(animalsCountLabel);
-
-        grassCountLabel = new JLabel();
-        grassCountLabel.setText("grass on map:" + simulation.statistics.countGrass());
-        add(grassCountLabel);
-
-        dominantGenomeTextLabel = new JLabel();
-        dominantGenomeTextLabel.setText("dominant genome:");
-        add(dominantGenomeTextLabel);
-
+        animalsCountLabel = new JLabel("animals on map:" + simulation.statistics.countAnimals());
+        grassCountLabel = new JLabel("plants on map:" + simulation.statistics.countGrass());
+        averageLifespanLabel = new JLabel("average lifespan:" + simulation.statistics.getAverageLifespan());
+        averageOffspringCount = new JLabel("average offspring count:" + simulation.statistics.getAverageChildrenCount());
+        averageEnergyField = new JLabel("average energy: " + simulation.statistics.getAverageEnergy());
+        JLabel dominantGenomeTextLabel = new JLabel("dominant genome:");
         dominantGenomeLabel = new JLabel("-");
+
+        add(nameLabel);
+        add(startStopButton);
+        add(showDominantButton);
+        add(saveLongTermStatistics);
+        add(animalsCountLabel);
+        add(grassCountLabel);
+        add(averageLifespanLabel);
+        add(averageOffspringCount);
+        add(averageEnergyField);
+        add(dominantGenomeTextLabel);
         add(dominantGenomeLabel);
 
-        averageLifespanLabel = new JLabel();
-        averageLifespanLabel.setText("average lifespan:" + simulation.statistics.getAverageLifespan());
-        add(averageLifespanLabel);
-
-        averageOffspringCount = new JLabel();
-        averageOffspringCount.setText("average offspring count:" + simulation.statistics.getAverageChildrenCount());
-        add(averageOffspringCount);
-
-        averageEnergyField = new JLabel();
-        averageEnergyField.setText("average energy: "+ simulation.statistics.getAverageEnergy());
-        add(averageEnergyField);
-
-        for (Component component: this.getComponents()){
+        for (Component component : this.getComponents()) {
             component.setForeground(TEXT_COLOR);
             component.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-            if (component instanceof JLabel){
-                ((JLabel)component).setHorizontalAlignment(SwingConstants.CENTER);
+            if (component instanceof JLabel) {
+                ((JLabel) component).setHorizontalAlignment(SwingConstants.CENTER);
             }
         }
 
-        nameLabel.setFont(new Font(Font.MONOSPACED,  Font.BOLD, 15));
+        nameLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 15));
         nameLabel.setForeground(new Color(0, 102, 0));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == startStopButton){
-            if (stopped){
-                mapPanel.timer.start();
+        if (e.getSource() == startStopButton) {
+            if (stopped) {
+                mapPanel.resume();
                 startStopButton.setText("STOP");
                 stopped = false;
             } else {
-                mapPanel.timer.stop();
+                mapPanel.pause();
                 startStopButton.setText("START");
                 stopped = true;
             }
-        } else if (e.getSource() == showDominantButton){
-            if (showingDominant){
+        } else if (e.getSource() == showDominantButton) {
+            if (showingDominant) {
                 showDominantButton.setText("HIGHLIGHT DOMINANT GENOME");
                 mapPanel.setDominantGenome(null);
                 showingDominant = false;
@@ -125,7 +105,12 @@ public class StatPanel extends JPanel implements ActionListener {
                 showDominantButton.setText("DON'T HIGHLIGHT DOMINANT GENOME");
                 showingDominant = true;
             }
-        } else if (e.getSource() == saveLongTermStatistics){
+        } else if (e.getSource() == saveLongTermStatistics) {
+
+            if(simulation.areLongTermStatisticsOngoing()){
+                JOptionPane.showMessageDialog(null, "statistics are already being generated", "error", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
 
             JTextField fileField = new JTextField();
             JTextField nField = new JTextField();
@@ -136,7 +121,7 @@ public class StatPanel extends JPanel implements ActionListener {
             inputPanel.add(nLabel);
             inputPanel.add(nField);
             inputPanel.setSize(500, 200);
-            inputPanel.setLayout(new GridLayout(2,1));
+            inputPanel.setLayout(new GridLayout(2, 1));
             JLabel fileLabel = new JLabel("new file name: ");
             fileLabel.setHorizontalAlignment(SwingConstants.RIGHT);
             inputPanel.add(fileLabel);
@@ -145,21 +130,22 @@ public class StatPanel extends JPanel implements ActionListener {
             int result = JOptionPane.showConfirmDialog(null, inputPanel,
                     "Long term statistics", JOptionPane.OK_CANCEL_OPTION);
 
-            if (result == JOptionPane.OK_OPTION){
+            if (result == JOptionPane.OK_OPTION) {
                 try {
                     int numGenerations = Integer.parseInt(nField.getText());
                     if (numGenerations < 1) throw new NumberFormatException();
 
                     String fileName = fileField.getText();
                     File file = new File(fileName);
-                    if(file.exists()) throw new IllegalArgumentException("file already exists, please enter a new file name");
+                    if (file.exists())
+                        throw new IllegalArgumentException("file already exists, please enter a new file name");
 
                     mapPanel.simulation.setLongTermStatistics(new LongTermStatistics(simulation.statistics, numGenerations, fileName));
-                } catch (NumberFormatException exception){
+                } catch (NumberFormatException exception) {
                     JOptionPane.showMessageDialog(null, "wrong num of generations", "error", JOptionPane.ERROR_MESSAGE);
-                } catch (IllegalArgumentException exception){
+                } catch (IllegalArgumentException exception) {
                     JOptionPane.showMessageDialog(null, exception.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
-                } catch (Exception exception){
+                } catch (Exception exception) {
                     JOptionPane.showMessageDialog(null, "wrong arguments", "error", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -171,14 +157,21 @@ public class StatPanel extends JPanel implements ActionListener {
         animalsCountLabel.setText("animals on map: " + simulation.statistics.countAnimals());
         averageOffspringCount.setText("average offspring count: " + df.format(simulation.statistics.getAverageChildrenCount()));
         averageLifespanLabel.setText("average lifespan: " + df.format(simulation.statistics.getAverageLifespan()));
-        grassCountLabel.setText("grass on map: " + simulation.statistics.countGrass());
-        averageEnergyField.setText("average energy: "+ df.format(simulation.statistics.getAverageEnergy()));
+        grassCountLabel.setText("plants on map: " + simulation.statistics.countGrass());
 
-        String dominantGenome = simulation.statistics.getDominantGenome();
-        dominantGenomeLabel.setText(dominantGenome);
-        if (showingDominant){
-            mapPanel.setDominantGenome(dominantGenome);
+        if (simulation.statistics.countAnimals() == 0){
+            averageEnergyField.setText("average energy: - ");
+            dominantGenomeLabel.setText("-");
+        } else{
+            averageEnergyField.setText("average energy: " + df.format(simulation.statistics.getAverageEnergy()));
+            String dominantGenome = simulation.statistics.getDominantGenome();
+            dominantGenomeLabel.setText(dominantGenome);
         }
+
+        if (showingDominant) {
+            mapPanel.setDominantGenome(simulation.statistics.getDominantGenome());
+        }
+
         repaint();
     }
 }

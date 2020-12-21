@@ -16,14 +16,16 @@ public class Simulation {
     private Animal animalObserved = null;
 
     public final int minimumEnergy;
+    private final int moveEnergy;
     private int simulationDay = 0;
 
-    public Simulation(MapDimensions dimensions, int nutritionalEnergy, int initialPopulation, int initialEnergy){
+    public Simulation(MapDimensions dimensions, int nutritionalEnergy, int initialPopulation, int initialEnergy, int moveEnergy) {
         map = new EvolutionMap(dimensions);
         statistics = new Statistics();
-        minimumEnergy = initialEnergy/2;
+        minimumEnergy = initialEnergy / 2;
         reproductionEngine = new ReproductionEngine(map, initialEnergy);
         grassConsumptionEngine = new GrassConsumptionEngine(map, nutritionalEnergy);
+        this.moveEnergy = moveEnergy;
 
         //gen 0
         for (int i = 0; i < initialPopulation; i++) {
@@ -37,7 +39,7 @@ public class Simulation {
         }
     }
 
-    public void run(){
+    public void run() {
         simulationDay++;
         decreaseEnergy();
         removeDead();
@@ -48,32 +50,29 @@ public class Simulation {
         addNewGrass();
         turnAnimals();
 
-        if (longTermStatistics != null){
-            longTermStatistics.update();
-        }
+        if (areLongTermStatisticsOngoing()) longTermStatistics.update();
     }
 
-    private void decreaseEnergy(){
-        for (Animal animal: animalsOnMap)
-            animal.decreaseEnergy();
-
+    private void decreaseEnergy() {
+        for (Animal animal : animalsOnMap)
+            animal.decreaseEnergy(moveEnergy);
     }
 
-    private void turnAnimals(){
-        for (Animal animal: animalsOnMap){
+    private void turnAnimals() {
+        for (Animal animal : animalsOnMap) {
             int turnValue = animal.getRandomTurnValue();
             animal.turn(turnValue);
         }
     }
 
-    private void removeDead(){
-        Iterator <Animal> iterator = animalsOnMap.iterator();
-        while (iterator.hasNext()){
+    private void removeDead() {
+        Iterator<Animal> iterator = animalsOnMap.iterator();
+        while (iterator.hasNext()) {
             Animal animal = iterator.next();
-            if (animal.isDead()){
+            if (animal.isDead()) {
                 map.removeAnimal(animal);
                 statistics.animalDead(animal);
-                if (animal == animalObserved){
+                if (animal == animalObserved) {
                     animalObservation.died(simulationDay);
                 }
                 iterator.remove();
@@ -81,35 +80,34 @@ public class Simulation {
         }
     }
 
-    private void move(){
-        for (Animal animal: animalsOnMap){
+    private void move() {
+        for (Animal animal: animalsOnMap)
             animal.move();
-        }
+
         updateTakenPositions();
     }
 
-    private void updateTakenPositions(){
+    private void updateTakenPositions() {
         takenPositions = new HashSet<>();
-        for (Animal animal: animalsOnMap){
+        for (Animal animal : animalsOnMap)
             takenPositions.add(animal.getPosition());
-        }
     }
 
-    private void eat(){
+    private void eat() {
         int grassEatenCount = grassConsumptionEngine.consumption(takenPositions);
         statistics.grassEaten(grassEatenCount);
     }
 
-    private void reproduce(){
+    private void reproduce() {
         LinkedList<Animal> newOffsprings = reproductionEngine.reproduction(takenPositions);
-        for (Animal offspring: newOffsprings){
+        for (Animal offspring : newOffsprings) {
             takenPositions.add(offspring.getPosition());
             statistics.animalBorn(offspring);
             animalsOnMap.add(offspring);
         }
     }
 
-    private void addNewGrass(){
+    private void addNewGrass() {
         Vector2d newGrassPosition = map.getFreePosition();
 
         if (newGrassPosition != null) {
@@ -126,7 +124,7 @@ public class Simulation {
         }
     }
 
-    public void setObservedAnimal (Animal animal)  throws IllegalStateException {
+    public void setObservedAnimal(Animal animal) throws IllegalStateException {
         if (animalObserved != null)
             throw new IllegalStateException("an animal is already being observed");
 
@@ -135,7 +133,7 @@ public class Simulation {
         reproductionEngine.setAnimalObservation(animalObservation);
     }
 
-    public String getObservedAnimalInfo(){
+    public String getObservedAnimalInfo() {
         return animalObservation.getObservedAnimalInfo();
     }
 
@@ -145,12 +143,16 @@ public class Simulation {
         reproductionEngine.unsetAnimalObservation();
     }
 
-    public void setLongTermStatistics(LongTermStatistics longTermStatistics){
+    public void setLongTermStatistics(LongTermStatistics longTermStatistics) {
         this.longTermStatistics = longTermStatistics;
         longTermStatistics.setSimulation(this);
     }
 
-    public void unsetLongTermStatistics(){
+    public void unsetLongTermStatistics() {
         longTermStatistics = null;
+    }
+
+    public boolean areLongTermStatisticsOngoing(){
+        return longTermStatistics != null;
     }
 }

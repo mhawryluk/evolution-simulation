@@ -8,17 +8,17 @@ import java.util.HashSet;
 public class GrassConsumptionTest {
 
     @Test
-    public void grassConsumptionTest(){
+    public void grassConsumptionTest() {
 
-        EvolutionMap map = new EvolutionMap(new MapDimensions(10,10,10));
-        new Grass(new Vector2d(5,5), map);
+        EvolutionMap map = new EvolutionMap(new MapDimensions(10, 10, 10));
+        new Grass(new Vector2d(5, 5), map);
 
-        Animal animal1 = new Animal(map, new Vector2d(5,5), 10);
-        Animal animal2 = new Animal(map, new Vector2d(5,5), 10);
+        Animal animal1 = new Animal(map, new Vector2d(5, 5), 10);
+        Animal animal2 = new Animal(map, new Vector2d(5, 5), 10);
 
         GrassConsumptionEngine grassConsumptionEngine = new GrassConsumptionEngine(map, 5);
         HashSet<Vector2d> takenPositions = new HashSet<>();
-        takenPositions.add(new Vector2d(5,5));
+        takenPositions.add(new Vector2d(5, 5));
 
         int grassEaten = grassConsumptionEngine.consumption(takenPositions);
 
@@ -29,6 +29,6 @@ public class GrassConsumptionTest {
         animal1.move();
         animal2.move();
 
-        Assert.assertFalse(map.isOccupied(new Vector2d(5,5)));
+        Assert.assertFalse(map.isOccupied(new Vector2d(5, 5)));
     }
 }

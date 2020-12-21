@@ -23,23 +23,23 @@ public class LongTermStatistics {
     private final String file;
     private Simulation simulation;
 
-    public LongTermStatistics (Statistics stats, int generationsToCount, String fileName){
+    public LongTermStatistics(Statistics stats, int generationsToCount, String fileName) {
         this.stats = stats;
         this.file = fileName;
         this.generationsToCount = generationsToCount;
     }
 
-    public void update(){
+    public void update() {
 
-        averageAnimalCount = ((averageAnimalCount * generationsCounted) + stats.countAnimals())/(generationsCounted+1);
-        averageGrassCount = ((averageGrassCount * generationsCounted) + stats.countGrass())/(generationsCounted+1);
-        averageEnergy = ((averageEnergy * generationsCounted) + stats.getAverageEnergy())/(generationsCounted+1);
-        averageOffspringCount = ((averageOffspringCount * generationsCounted) + stats.getAverageChildrenCount())/(generationsCounted+1);
-        averageLifespan = ((averageLifespan  * generationsCounted) + stats.getAverageLifespan())/(generationsCounted+1);
+        averageAnimalCount = ((averageAnimalCount * generationsCounted) + stats.countAnimals()) / (generationsCounted + 1);
+        averageGrassCount = ((averageGrassCount * generationsCounted) + stats.countGrass()) / (generationsCounted + 1);
+        averageEnergy = ((averageEnergy * generationsCounted) + stats.getAverageEnergy()) / (generationsCounted + 1);
+        averageOffspringCount = ((averageOffspringCount * generationsCounted) + stats.getAverageChildrenCount()) / (generationsCounted + 1);
+        averageLifespan = ((averageLifespan * generationsCounted) + stats.getAverageLifespan()) / (generationsCounted + 1);
 
         String dominantGenome = stats.getDominantGenome();
 
-        if (!genomeDominantCount.containsKey(dominantGenome)){
+        if (!genomeDominantCount.containsKey(dominantGenome)) {
             genomeDominantCount.put(dominantGenome, 1);
         } else {
             genomeDominantCount.replace(dominantGenome, genomeDominantCount.get(dominantGenome) + 1);
@@ -47,23 +47,23 @@ public class LongTermStatistics {
 
         generationsCounted++;
 
-        if (generationsCounted == generationsToCount){
+        if (generationsCounted == generationsToCount) {
             saveStatistics(file);
             simulation.unsetLongTermStatistics();
         }
     }
 
-    public void saveStatistics(String file){
+    public void saveStatistics(String file) {
 
         String dominantGenome = Collections.max(genomeDominantCount.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
         try {
             FileWriter myWriter = new FileWriter(file);
             myWriter.write("animal count: " + averageAnimalCount +
-                            "\ngrass count: " + averageGrassCount +
-                            "\nenergy: " + averageEnergy +
-                            "\nchildren count: " + averageOffspringCount +
-                            "\nlifespan: " + averageLifespan+
-                            "\ndominant genome: " + dominantGenome
+                    "\ngrass count: " + averageGrassCount +
+                    "\nenergy: " + averageEnergy +
+                    "\nchildren count: " + averageOffspringCount +
+                    "\nlifespan: " + averageLifespan +
+                    "\ndominant genome: " + dominantGenome
             );
             myWriter.close();
             JOptionPane.showMessageDialog(null, "statistics are saved to the file");
@@ -72,7 +72,7 @@ public class LongTermStatistics {
         }
     }
 
-    public void setSimulation(Simulation simulation){
+    public void setSimulation(Simulation simulation) {
         this.simulation = simulation;
     }
 }

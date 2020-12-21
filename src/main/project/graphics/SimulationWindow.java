@@ -1,33 +1,32 @@
 package project.graphics;
-import project.engine.MapDimensions;
-import project.engine.Simulation;
 
+import project.engine.*;
 import javax.swing.*;
 import java.awt.*;
 
-public class Window extends JFrame {
+public class SimulationWindow extends JFrame {
 
-    private final int WIDTH = 1360;
-    private final int HEIGHT = 640;
-    private final int STAT_PANEL_WIDTH = 300;
+    public SimulationWindow(int width, int height, int initialPopulation, int nutritionalEnergy, int initialEnergy, int jungleRatio, int moveEnergy) {
 
-    public Window(int width, int height, int initialPopulation, int nutritionalEnergy, int initialEnergy, int jungleRatio){
+        MapDimensions dimensions = new MapDimensions(width, height, jungleRatio);
+        Simulation simulation1 = new Simulation(dimensions, nutritionalEnergy, initialPopulation, initialEnergy, moveEnergy);
+        Simulation simulation2 = new Simulation(dimensions, nutritionalEnergy, initialPopulation, initialEnergy, moveEnergy);
 
-        MapDimensions dimensions = new MapDimensions(width, height , jungleRatio);
-        Simulation simulation1 = new Simulation(dimensions, nutritionalEnergy, initialPopulation, initialEnergy);
-        Simulation simulation2 = new Simulation(dimensions, nutritionalEnergy, initialPopulation, initialEnergy);
+        int WIDTH = 1360;
+        int HEIGHT = 640;
+        int STAT_PANEL_WIDTH = 300;
 
         int squareSize = Math.min((WIDTH - STAT_PANEL_WIDTH) / (2 * width), HEIGHT / height);
+        MapPanel.pics = new Pictures(squareSize);
         MapPanel mapPanel1 = new MapPanel(simulation1, squareSize);
         MapPanel mapPanel2 = new MapPanel(simulation2, squareSize);
 
         JPanel statPanel = new JPanel();
-        statPanel.setLayout(new GridLayout(2,1,10,11));
+        statPanel.setLayout(new GridLayout(2, 1, 10, 11));
         StatPanel statPanel1 = new StatPanel(simulation1, mapPanel1, "left map");
         StatPanel statPanel2 = new StatPanel(simulation2, mapPanel2, "right map");
 
         setTitle("Evolution Project");
-//        setIconImage(new ImageIcon("pics/chick-down.png").getImage().getScaledInstance(10,10, Image.SCALE_DEFAULT));
         setLayout(new BorderLayout(10, 10));
 
         JPanel maps = new JPanel();

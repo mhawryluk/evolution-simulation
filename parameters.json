@@ -1,8 +1,9 @@
 {
   "width": 10,
   "height": 15,
-  "nutritionalEnergy": 9,
-  "initialEnergy": 13,
-  "initialPopulation": 6,
-  "jungleRatio": 10
+  "plantEnergy": 15,
+  "startEnergy": 20,
+  "initialPopulation": 8,
+  "jungleRatio": 20,
+  "moveEnergy": 1
 }

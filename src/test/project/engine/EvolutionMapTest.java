@@ -2,6 +2,7 @@ package project.engine;
 
 import org.junit.Assert;
 import org.junit.Test;
+
 import java.util.ArrayList;
 
 public class EvolutionMapTest {
@@ -37,14 +38,14 @@ public class EvolutionMapTest {
     }
 
     @Test
-    public void grassAtTest(){
+    public void grassAtTest() {
         EvolutionMap map = new EvolutionMap(new MapDimensions(3, 3, 50));
-        Grass grass = new Grass(new Vector2d(0,1), map);
-        Assert.assertEquals(map.grassAt(new Vector2d(0,1)), grass);
-        Assert.assertNull(map.grassAt(new Vector2d(1,1)));
+        Grass grass = new Grass(new Vector2d(0, 1), map);
+        Assert.assertEquals(map.grassAt(new Vector2d(0, 1)), grass);
+        Assert.assertNull(map.grassAt(new Vector2d(1, 1)));
 
         map.removeGrass(grass);
-        Assert.assertNull(map.grassAt(new Vector2d(0,1)));
+        Assert.assertNull(map.grassAt(new Vector2d(0, 1)));
     }
 
     @Test
@@ -64,13 +65,13 @@ public class EvolutionMapTest {
     }
 
     @Test
-    public void wrapPositionTest(){
-        EvolutionMap map = new EvolutionMap(new MapDimensions(5,5,10));
-        Assert.assertEquals(new Vector2d(1,0), map.wrapPosition(new Vector2d(6,5)));
-        Assert.assertEquals(new Vector2d(4,4), map.wrapPosition(new Vector2d(-1,-1)));
-        Assert.assertEquals(new Vector2d(0,0), map.wrapPosition(new Vector2d(0,0)));
-        Assert.assertEquals(new Vector2d(1,1), map.wrapPosition(new Vector2d(1,1)));
-        Assert.assertEquals(new Vector2d(1,1), map.wrapPosition(new Vector2d(6, 6)));
+    public void wrapPositionTest() {
+        EvolutionMap map = new EvolutionMap(new MapDimensions(5, 5, 10));
+        Assert.assertEquals(new Vector2d(1, 0), map.wrapPosition(new Vector2d(6, 5)));
+        Assert.assertEquals(new Vector2d(4, 4), map.wrapPosition(new Vector2d(-1, -1)));
+        Assert.assertEquals(new Vector2d(0, 0), map.wrapPosition(new Vector2d(0, 0)));
+        Assert.assertEquals(new Vector2d(1, 1), map.wrapPosition(new Vector2d(1, 1)));
+        Assert.assertEquals(new Vector2d(1, 1), map.wrapPosition(new Vector2d(6, 6)));
     }
 
     @Test

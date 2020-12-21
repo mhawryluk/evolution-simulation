@@ -6,13 +6,13 @@ import org.junit.Test;
 public class AnimalTest {
 
     @Test
-    public void animalEnergyTest(){
+    public void animalEnergyTest() {
 
-        Animal animal = new Animal(new EvolutionMap(new MapDimensions(5,5,5)), new Vector2d(0,0), 5);
+        Animal animal = new Animal(new EvolutionMap(new MapDimensions(5, 5, 5)), new Vector2d(0, 0), 5);
 
         Assert.assertEquals(animal.getEnergy(), 5);
 
-        animal.decreaseEnergy();
+        animal.decreaseEnergy(1);
         Assert.assertEquals(animal.getEnergy(), 4);
 
         animal.energyLost();
@@ -23,42 +23,45 @@ public class AnimalTest {
 
         animal.energyLost();
         Assert.assertEquals(animal.getEnergy(), 4);
-
+        for (int i = 0; i < 4; i++){
+            animal.energyLost();
+        }
+        Assert.assertTrue(animal.isDead());
     }
 
     @Test
-    public void movementTest(){
+    public void movementTest() {
 
-        Animal animal = new Animal(new EvolutionMap(new MapDimensions(5,5, 50)), new Vector2d(0,0), 10);
+        Animal animal = new Animal(new EvolutionMap(new MapDimensions(5, 5, 50)), new Vector2d(0, 0), 10);
 
-        while (animal.getOrientation() != MapDirection.NORTH){
+        while (animal.getOrientation() != MapDirection.NORTH) {
             animal.turn(1);
         }
 
         animal.move();
-        Assert.assertEquals(animal.getPosition(), new Vector2d(0,4));
+        Assert.assertEquals(animal.getPosition(), new Vector2d(0, 4));
 
         animal.turn(6);
         animal.move();
-        Assert.assertEquals(animal.getPosition(), new Vector2d(4,4));
+        Assert.assertEquals(animal.getPosition(), new Vector2d(4, 4));
 
         animal.turn(5);
         animal.move();
-        Assert.assertEquals(animal.getPosition(), new Vector2d(0,0));
+        Assert.assertEquals(animal.getPosition(), new Vector2d(0, 0));
 
         animal.move();
-        Assert.assertEquals(animal.getPosition(), new Vector2d(1,1));
+        Assert.assertEquals(animal.getPosition(), new Vector2d(1, 1));
 
         animal.turn(3);
         animal.move();
-        Assert.assertEquals(animal.getPosition(), new Vector2d(0,1));
+        Assert.assertEquals(animal.getPosition(), new Vector2d(0, 1));
     }
 
     @Test
-    public void turnTest(){
-        Animal animal = new Animal(new EvolutionMap(new MapDimensions(2,2, 5)), new Vector2d(0,0), 10);
+    public void turnTest() {
+        Animal animal = new Animal(new EvolutionMap(new MapDimensions(2, 2, 5)), new Vector2d(0, 0), 10);
 
-        while (animal.getOrientation() != MapDirection.SOUTH){
+        while (animal.getOrientation() != MapDirection.SOUTH) {
             animal.turn(1);
         }
 

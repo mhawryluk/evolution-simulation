@@ -1,4 +1,5 @@
 package project.engine;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -11,7 +12,7 @@ public class Vector2dTest {
     @Test
     public void testEquals() {
         Assert.assertTrue(vector1.equals(new Vector2d(-2, 2)));
-        Assert.assertFalse(vector2.equals(new Vector2d(-1, -3)));
+        Assert.assertTrue(vector2.equals(new Vector2d(1, 3)));
         Assert.assertFalse(vector2.equals(vector3));
     }
 
@@ -23,7 +24,7 @@ public class Vector2dTest {
     }
 
     @Test
-    public void testPrecedes(){
+    public void testPrecedes() {
         Assert.assertTrue(vector1.precedes(vector2));
         Assert.assertFalse(vector3.precedes(vector1));
         Assert.assertTrue((vector1.precedes(vector1)));

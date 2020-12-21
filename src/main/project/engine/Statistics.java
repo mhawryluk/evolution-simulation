@@ -12,59 +12,59 @@ public class Statistics {
     private double averageEnergy;
     private final HashMap<String, Integer> genomeCount = new HashMap<>();
 
-    public void firstGenAnimalPlaced(Animal animal){
+    public void firstGenAnimalPlaced(Animal animal) {
         animalsCount++;
         includeGenome(animal.getGenomeString());
     }
 
-    public void animalBorn(Animal animal){
-        averageChildrenCount = ((averageChildrenCount * animalsCount)+2)/(animalsCount+1);
+    public void animalBorn(Animal animal) {
+        averageChildrenCount = ((averageChildrenCount * animalsCount) + 2) / (animalsCount + 1);
         animalsCount++;
         includeGenome(animal.getGenomeString());
     }
 
-    private void includeGenome(String genome){
+    private void includeGenome(String genome) {
         if (!genomeCount.containsKey(genome))
             genomeCount.put(genome, 1);
         else
-            genomeCount.replace(genome, genomeCount.get(genome)+1);
+            genomeCount.replace(genome, genomeCount.get(genome) + 1);
     }
 
-    public void animalDead(Animal animal){
-        averageLifespan = (averageLifespan * animalsDead + animal.getLifespan())/(animalsDead + 1);
-        averageChildrenCount = (((averageChildrenCount) * animalsCount) - animal.getChildrenCount())/(animalsCount - 1);
+    public void animalDead(Animal animal) {
+        averageLifespan = (averageLifespan * animalsDead + animal.getLifespan()) / (animalsDead + 1);
+        averageChildrenCount = (((averageChildrenCount) * animalsCount) - animal.getChildrenCount()) / (animalsCount - 1);
         animalsCount--;
         animalsDead++;
         String genome = animal.getGenomeString();
-        genomeCount.replace(genome, genomeCount.get(genome)-1);
+        genomeCount.replace(genome, genomeCount.get(genome) - 1);
     }
 
-    public String getDominantGenome(){
+    public String getDominantGenome() {
         if (genomeCount.size() == 0) return " ";
         return Collections.max(genomeCount.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
     }
 
-    public void newGrass(){
+    public void newGrass() {
         grassCount++;
     }
 
-    public void grassEaten(int grassEatenCount){
+    public void grassEaten(int grassEatenCount) {
         grassCount -= grassEatenCount;
     }
 
-    public int countGrass(){
+    public int countGrass() {
         return grassCount;
     }
 
-    public int countAnimals(){
+    public int countAnimals() {
         return animalsCount;
     }
 
-    public double getAverageLifespan(){
+    public double getAverageLifespan() {
         return averageLifespan;
     }
 
-    public double getAverageChildrenCount(){
+    public double getAverageChildrenCount() {
         return averageChildrenCount;
     }
 
@@ -72,7 +72,7 @@ public class Statistics {
         return averageEnergy;
     }
 
-    public void updateAverageEnergy(LinkedHashSet<Animal> animalsOnMap){
+    public void updateAverageEnergy(LinkedHashSet<Animal> animalsOnMap) {
         averageEnergy = animalsOnMap
                 .stream()
                 .mapToInt(Animal::getEnergy)

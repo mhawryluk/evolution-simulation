@@ -5,7 +5,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Animal extends MapElement {
     private MapDirection orientation;
     private final EvolutionMap map;
-    private final Genome genes;
+    private final Genome genome;
     private int lifespan;
     private int childrenCount;
 
@@ -13,21 +13,16 @@ public class Animal extends MapElement {
         this(map, position, energy, new Genome());
     }
 
-    public Animal(EvolutionMap map, Vector2d position, int energy, Genome genes){
+    public Animal(EvolutionMap map, Vector2d position, int energy, Genome genome) {
         this.map = map;
         this.position = position;
         this.energy = energy;
         this.orientation = MapDirection.NORTH.turn(ThreadLocalRandom.current().nextInt(0, 8));
-        this.genes = genes;
+        this.genome = genome;
         map.place(this);
     }
 
-    @Override
-    public String toString() {
-        return orientation.toString();
-    }
-
-    public void move(){
+    public void move() {
         Vector2d newPosition = position.add(orientation.toVector());
         newPosition = map.wrapPosition(newPosition);
         Vector2d oldPosition = position;
@@ -36,57 +31,61 @@ public class Animal extends MapElement {
         lifespan++;
     }
 
-    public void turn(int turnValue){
+    public void turn(int turnValue) {
         orientation = orientation.turn(turnValue);
     }
 
-    public int getRandomTurnValue(){
-        return genes.getRandomGene();
+    public int getRandomTurnValue() {
+        return genome.getRandomGene();
     }
 
-    private void positionChanged(Vector2d oldPosition){
+    private void positionChanged(Vector2d oldPosition) {
         map.positionChanged(oldPosition, this);
     }
 
-    public boolean isDead(){
-        return energy == 0;
+    public void decreaseEnergy(int energy) {
+        this.energy -= energy;
     }
 
-    public void decreaseEnergy(){
-        energy--;
-    }
-
-    public void energyLost(){
+    public void energyLost() {
         energy *= 0.75;
     }
 
-    public void increaseEnergy(int nutrition){
+    public void increaseEnergy(int nutrition) {
         energy += nutrition;
     }
 
-    public int getEnergy(){
+    public void newChild() {
+        childrenCount++;
+    }
+
+    public boolean isDead() {
+        return energy <= 0;
+    }
+
+    public int getEnergy() {
         return energy;
     }
 
-    public int getLifespan(){
+    public int getLifespan() {
         return lifespan;
     }
 
-    public int getChildrenCount(){
+
+    public int getChildrenCount() {
         return childrenCount;
     }
 
-    public MapDirection getOrientation(){
+    public MapDirection getOrientation() {
         return orientation;
     }
 
-    public byte[] getGenes() {
-        return genes.getGenome();
+    public byte[] getGenome() {
+        return genome.getGenome();
     }
 
-    public void newChild(){ childrenCount++;}
 
-    public String getGenomeString(){
-        return genes.toString();
+    public String getGenomeString() {
+        return genome.toString();
     }
 }
