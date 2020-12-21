@@ -2,7 +2,7 @@ package project.engine;
 
 import java.util.*;
 
-public class Simulation{
+public class Simulation {
 
     public final EvolutionMap map;
     public final Statistics statistics;
@@ -113,7 +113,7 @@ public class Simulation{
         Vector2d newGrassPosition = map.getFreePosition();
 
         if (newGrassPosition != null) {
-            map.place(new Grass(newGrassPosition));
+            new Grass(newGrassPosition, map);
             statistics.newGrass();
         }
 
@@ -121,7 +121,7 @@ public class Simulation{
         newGrassPosition = map.getFreeJunglePosition();
 
         if (newGrassPosition != null) {
-            map.place(new Grass(newGrassPosition));
+            new Grass(newGrassPosition, map);
             statistics.newGrass();
         }
     }

@@ -1,7 +1,7 @@
 package project.engine;
+
 import org.junit.Assert;
 import org.junit.Test;
-
 
 public class MapDirectionTest {
 

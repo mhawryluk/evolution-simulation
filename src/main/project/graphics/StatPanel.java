@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.text.DecimalFormat;
 
 public class StatPanel extends JPanel implements ActionListener {
@@ -20,6 +21,7 @@ public class StatPanel extends JPanel implements ActionListener {
     private final JLabel grassCountLabel;
     private final JLabel dominantGenomeLabel;
     private final JLabel averageLifespanLabel;
+    private final JLabel dominantGenomeTextLabel;
     private final JLabel averageOffspringCount;
     private final JLabel averageEnergyField;
     public int squareSize = 40;
@@ -51,6 +53,16 @@ public class StatPanel extends JPanel implements ActionListener {
         startStopButton.addActionListener(this);
         add(startStopButton);
 
+        showDominantButton = new JButton();
+        showDominantButton.setText("HIGHLIGHT DOMINANT GENOME");
+        showDominantButton.addActionListener(this);
+        add(showDominantButton);
+
+        saveLongTermStatistics = new JButton();
+        saveLongTermStatistics.setText("GENERATE STATISTICS");
+        saveLongTermStatistics.addActionListener(this);
+        add(saveLongTermStatistics);
+
         animalsCountLabel = new JLabel();
         animalsCountLabel.setText("animals on map:" + simulation.statistics.countAnimals());
         add(animalsCountLabel);
@@ -59,8 +71,11 @@ public class StatPanel extends JPanel implements ActionListener {
         grassCountLabel.setText("grass on map:" + simulation.statistics.countGrass());
         add(grassCountLabel);
 
-        dominantGenomeLabel = new JLabel();
-        dominantGenomeLabel.setText("dominant genome: ");
+        dominantGenomeTextLabel = new JLabel();
+        dominantGenomeTextLabel.setText("dominant genome:");
+        add(dominantGenomeTextLabel);
+
+        dominantGenomeLabel = new JLabel("-");
         add(dominantGenomeLabel);
 
         averageLifespanLabel = new JLabel();
@@ -74,16 +89,6 @@ public class StatPanel extends JPanel implements ActionListener {
         averageEnergyField = new JLabel();
         averageEnergyField.setText("average energy: "+ simulation.statistics.getAverageEnergy());
         add(averageEnergyField);
-
-        showDominantButton = new JButton();
-        showDominantButton.setText("HIGHLIGHT DOMINANT GENOME");
-        showDominantButton.addActionListener(this);
-        add(showDominantButton);
-
-        saveLongTermStatistics = new JButton();
-        saveLongTermStatistics.setText("GENERATE STATISTICS");
-        saveLongTermStatistics.addActionListener(this);
-        add(saveLongTermStatistics);
 
         for (Component component: this.getComponents()){
             component.setForeground(TEXT_COLOR);
@@ -132,24 +137,30 @@ public class StatPanel extends JPanel implements ActionListener {
             inputPanel.add(nField);
             inputPanel.setSize(500, 200);
             inputPanel.setLayout(new GridLayout(2,1));
-            JLabel fileLabel = new JLabel("file name: ");
+            JLabel fileLabel = new JLabel("new file name: ");
             fileLabel.setHorizontalAlignment(SwingConstants.RIGHT);
             inputPanel.add(fileLabel);
             inputPanel.add(fileField);
 
             int result = JOptionPane.showConfirmDialog(null, inputPanel,
-                    "Long term statistics", JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE, null);
+                    "Long term statistics", JOptionPane.OK_CANCEL_OPTION);
 
-            if (result == JOptionPane.OK_OPTION) {
-
+            if (result == JOptionPane.OK_OPTION){
                 try {
                     int numGenerations = Integer.parseInt(nField.getText());
+                    if (numGenerations < 1) throw new NumberFormatException();
+
                     String fileName = fileField.getText();
+                    File file = new File(fileName);
+                    if(file.exists()) throw new IllegalArgumentException("file already exists, please enter a new file name");
+
                     mapPanel.simulation.setLongTermStatistics(new LongTermStatistics(simulation.statistics, numGenerations, fileName));
+                } catch (NumberFormatException exception){
+                    JOptionPane.showMessageDialog(null, "wrong num of generations", "error", JOptionPane.ERROR_MESSAGE);
+                } catch (IllegalArgumentException exception){
+                    JOptionPane.showMessageDialog(null, exception.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
                 } catch (Exception exception){
-                    exception.printStackTrace();
-                    System.out.println(exception.getMessage());
+                    JOptionPane.showMessageDialog(null, "wrong arguments", "error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -164,7 +175,7 @@ public class StatPanel extends JPanel implements ActionListener {
         averageEnergyField.setText("average energy: "+ df.format(simulation.statistics.getAverageEnergy()));
 
         String dominantGenome = simulation.statistics.getDominantGenome();
-        dominantGenomeLabel.setText("dominant genome: " + dominantGenome);
+        dominantGenomeLabel.setText(dominantGenome);
         if (showingDominant){
             mapPanel.setDominantGenome(dominantGenome);
         }

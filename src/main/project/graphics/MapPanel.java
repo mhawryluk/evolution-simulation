@@ -94,18 +94,24 @@ public class MapPanel extends JLayeredPane implements ActionListener {
                     if (animal != null){
                         animalSelected = animal;
 
-                        String input = (String) JOptionPane.showInputDialog(null,
+                        Object paneInput = JOptionPane.showInputDialog(null,
                                                         "enter number of generations",
                                                         "Observe selected animal", JOptionPane.QUESTION_MESSAGE,
                                                             new ImageIcon(pics[animalSelected.getOrientation().getIndex()]),
                                                 null, "10");
-                        if (input == null) return;
 
-                        if (!input.matches("\\d+")){
+                        if (paneInput == null) {
+                            animalSelected = null;
+                            return;
+                        }
+                        String input = (String) paneInput;
+
+                        if (!input.matches("^[1-9]\\d*$") ||  Integer.parseInt(input) < 1){
                             JOptionPane.showMessageDialog(null, "wrong num of generations", "error", JOptionPane.ERROR_MESSAGE);
                             animalSelected = null;
                             return;
                         }
+
                         else {
                             int watchedGenerations = Integer.parseInt(input);
                             if (watchedGenerations > 0){

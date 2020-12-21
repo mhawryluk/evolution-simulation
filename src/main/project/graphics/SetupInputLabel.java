@@ -18,8 +18,7 @@ public class SetupInputLabel extends JPanel {
         add(textLabel);
 
 
-        inputSpinner = new JSpinner();
-        inputSpinner.setValue(10);
+        inputSpinner = new JSpinner(new SpinnerNumberModel(10, 1, 100, 1));
         inputSpinner.setBounds(220, 10, 50, 30);
         add(inputSpinner);
     }

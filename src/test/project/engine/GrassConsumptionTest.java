@@ -11,7 +11,7 @@ public class GrassConsumptionTest {
     public void grassConsumptionTest(){
 
         EvolutionMap map = new EvolutionMap(new MapDimensions(10,10,10));
-        map.place(new Grass(new Vector2d(5,5)));
+        new Grass(new Vector2d(5,5), map);
 
         Animal animal1 = new Animal(map, new Vector2d(5,5), 10);
         Animal animal2 = new Animal(map, new Vector2d(5,5), 10);

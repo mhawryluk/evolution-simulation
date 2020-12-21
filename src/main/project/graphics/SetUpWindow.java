@@ -50,15 +50,25 @@ public class SetUpWindow extends JFrame implements ActionListener {
             String json = Files.readString(Path.of("parameters.json"));
             JSONObject jsonObject = new JSONObject(json);
 
-            labelJungleRatio.setValue(jsonObject.getInt("jungleRatio"));
-            labelWidth.setValue(jsonObject.getInt("width"));
-            labelHeight.setValue(jsonObject.getInt("height"));
-            labelInitialPopulation.setValue(jsonObject.getInt("initialPopulation"));
-            labelInitialEnergy.setValue(jsonObject.getInt("initialEnergy"));
+            int jungleRatio = jsonObject.getInt("jungleRatio");
+            if (jungleRatio > 1 && jungleRatio <= 100) labelJungleRatio.setValue(jsonObject.getInt("jungleRatio"));
+
+            int width = jsonObject.getInt("width");
+            if (width > 0) labelWidth.setValue(width);
+
+            int height = jsonObject.getInt("height");
+            if (height > 0) labelHeight.setValue(jsonObject.getInt("height"));
+
+            int initialPopulation = jsonObject.getInt("initialPopulation");
+            if (initialPopulation > 0) labelInitialPopulation.setValue(initialPopulation);
+
+            int initialEnergy = jsonObject.getInt("initialEnergy");
+            if (initialEnergy > 0) labelInitialEnergy.setValue(jsonObject.getInt("initialEnergy"));
+
             labelNutritionalEnergy.setValue(jsonObject.getInt("nutritionalEnergy"));
 
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, e.getMessage(), "error", JOptionPane.ERROR_MESSAGE);
         }
 
         setTitle("Evolution Simulation Setup");
@@ -81,7 +91,12 @@ public class SetUpWindow extends JFrame implements ActionListener {
             int height = labelHeight.getValue();
             int jungleRatio = labelJungleRatio.getValue();
 
-            project.graphics.Window window = new Window(width, height, initialPopulation, nutritionalEnergy, initialEnergy, jungleRatio);
+            if (initialPopulation > width * height){
+                JOptionPane.showMessageDialog(null, "initial population is bigger than available fields on map", "error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            Window window = new Window(width, height, initialPopulation, nutritionalEnergy, initialEnergy, jungleRatio);
             dispose();
         }
     }

@@ -15,11 +15,10 @@ public class Statistics {
     public void firstGenAnimalPlaced(Animal animal){
         animalsCount++;
         includeGenome(animal.getGenomeString());
-        averageEnergy = animal.getEnergy();
     }
 
     public void animalBorn(Animal animal){
-        averageChildrenCount = ((averageChildrenCount *animalsCount)+2)/(animalsCount+1);
+        averageChildrenCount = ((averageChildrenCount * animalsCount)+2)/(animalsCount+1);
         animalsCount++;
         includeGenome(animal.getGenomeString());
     }

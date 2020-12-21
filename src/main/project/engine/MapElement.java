@@ -8,5 +8,4 @@ public abstract class MapElement{
     public Vector2d getPosition(){
         return position;
     }
-
 }

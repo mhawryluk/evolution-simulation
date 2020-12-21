@@ -1,9 +1,8 @@
 package project.engine;
+
 import org.junit.Assert;
 import org.junit.Test;
-
 import java.util.ArrayList;
-import java.util.TreeSet;
 
 public class EvolutionMapTest {
 
@@ -40,8 +39,7 @@ public class EvolutionMapTest {
     @Test
     public void grassAtTest(){
         EvolutionMap map = new EvolutionMap(new MapDimensions(3, 3, 50));
-        Grass grass = new Grass(new Vector2d(0,1));
-        map.place(grass);
+        Grass grass = new Grass(new Vector2d(0,1), map);
         Assert.assertEquals(map.grassAt(new Vector2d(0,1)), grass);
         Assert.assertNull(map.grassAt(new Vector2d(1,1)));
 
@@ -52,8 +50,7 @@ public class EvolutionMapTest {
     @Test
     public void objectAtTest() {
         EvolutionMap map = new EvolutionMap(new MapDimensions(3, 3, 50));
-        Grass grass = new Grass(new Vector2d(1, 0));
-        map.place(grass);
+        Grass grass = new Grass(new Vector2d(1, 0), map);
 
         Assert.assertTrue(map.isOccupied(new Vector2d(1, 0)));
         Assert.assertFalse(map.isOccupied(new Vector2d(0, 1)));
